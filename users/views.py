@@ -1,8 +1,10 @@
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login
 from .models import User
+from django.contrib.auth.hashers import make_password
 
-@csrf_exempt  # Se puede desactivar la protección CSRF para las pruebas (aunque no es recomendado en producción)
+@csrf_exempt
 def register(request):
     # Si es una solicitud POST (para registrar el usuario)
     if request.method == "POST":
@@ -14,8 +16,9 @@ def register(request):
         if User.objects.filter(email=email).exists():
             return HttpResponse("El correo ya está registrado", status=400)
 
-        # Crear el usuario
-        user = User(name=name, email=email, password=password)
+        # Crear el usuario y almacenar la contraseña de forma segura
+        user = User(name=name, email=email)
+        user.password = make_password(password)  # Encriptar la contraseña
         user.save()
 
         # Responder con mensaje de éxito
@@ -25,20 +28,24 @@ def register(request):
     elif request.method == "GET":
         return HttpResponse("Formulario de registro (GET)", status=200)
 
-    # Si se recibe otro tipo de solicitud, devolver un error
     return HttpResponse("Método no permitido", status=405)
 
 
-
-
-def login(request):
+@csrf_exempt  # Solo para pruebas, no recomendado en producción
+def login_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
 
+        # Buscar al usuario por correo electrónico
         try:
-            user = User.objects.get(email=email) # Busca al usuario por email
-            if user.check_password(password): # Compara contraseñas
+            # Buscar usuario por correo electrónico
+            user = User.objects.get(email=email)
+            
+            # Autenticación manual: Verificar la contraseña del usuario
+            if user.check_password(password):
+                # Si la contraseña es correcta, hacer login
+                login(request, user)
                 return HttpResponse("Login exitoso", status=200)
             else:
                 return HttpResponse("Contraseña incorrecta", status=401)
@@ -46,4 +53,3 @@ def login(request):
             return HttpResponse("Usuario no encontrado", status=404)
 
     return HttpResponse("Método no permitido", status=405)
-
