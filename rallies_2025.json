@@ -1,0 +1,236 @@
+[
+    {
+        "rally_name": "14. Rallye Tierras Altas de Lorca 2025",
+        "results": [
+            {
+                "position": "1.",
+                "driver": "José Antonio Suárez",
+                "copilot": "Alberto Iglesias Pin",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda2023b.png",
+                "car_info": "Škoda Fabia RS Rally2",
+                "team_name": "Recalvi Team"
+            },
+            {
+                "position": "2.",
+                "driver": "Javier Pardo Siota",
+                "copilot": "David de La Puente",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda2023b.png",
+                "car_info": "Škoda Fabia RS Rally2",
+                "team_name": "Recalvi Team"
+            },
+            {
+                "position": "3.",
+                "driver": "Pepe López",
+                "copilot": "David Vázquez",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/hyundai2.png",
+                "car_info": "Hyundai i20 N Rally2",
+                "team_name": "Hyundai Motor España"
+            },
+            {
+                "position": "4.",
+                "driver": "Gil Membrado",
+                "copilot": "Alejandro López",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/ford.png",
+                "car_info": "Ford Fiesta Rally2",
+                "team_name": "Past Racing"
+            },
+            {
+                "position": "5.",
+                "driver": "José Luis Peláez",
+                "copilot": "José Murado",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda2023b.png",
+                "car_info": "Škoda Fabia RS Rally2",
+                "team_name": ""
+            },
+            {
+                "position": "6.",
+                "driver": "Joan Vinyes Dabad",
+                "copilot": "Jordi Mercader",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/andorra.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/hyundai2.png",
+                "car_info": "Hyundai i20 N Rally2",
+                "team_name": "Baporo Motorsport"
+            },
+            {
+                "position": "7.",
+                "driver": "Unai de La Dehesa",
+                "copilot": "Daniel Sosa Ojeda",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/citroen2009.png",
+                "car_info": "Citroën C3 Rally2",
+                "team_name": "Citroën Rally Team"
+            },
+            {
+                "position": "8.",
+                "driver": "Rokas Steponavičius",
+                "copilot": "Dovydas Ketvirtis",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/lithuania.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/lithuania.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/hyundai2.png",
+                "car_info": "Hyundai i20 N Rally2",
+                "team_name": ""
+            },
+            {
+                "position": "9.",
+                "driver": "José Luis García Molina",
+                "copilot": "Jordi Forcada",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda2023b.png",
+                "car_info": "Škoda Fabia RS Rally2",
+                "team_name": "Automóvil Club de Lorca"
+            },
+            {
+                "position": "10.",
+                "driver": "Juan Pablo Castro Iglesias",
+                "copilot": "Juan José Leal Olivenza",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda.png",
+                "car_info": "Škoda Fabia R5",
+                "team_name": "Escudería AR Vidal Racing"
+            }
+        ]
+    },
+    {
+        "rally_name": "42. Rally Sierra Morena - Córdoba Patrimonio de la Humanidad 2025",
+        "results": [
+            {
+                "position": "1.",
+                "driver": "Nikolay Gryazin",
+                "copilot": "Konstantin Aleksandrov",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/bulgaria.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/kyrgyzstan.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda2023b.png",
+                "car_info": "Škoda Fabia RS Rally2",
+                "team_name": "J2X Rally Team"
+            },
+            {
+                "position": "2.",
+                "driver": "Yoann Bonato",
+                "copilot": "Benjamin Boulloud",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/france.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/france.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/citroen2009.png",
+                "car_info": "Citroën C3 Rally2",
+                "team_name": ""
+            },
+            {
+                "position": "3.",
+                "driver": "José Antonio Suárez",
+                "copilot": "Alberto Iglesias Pin",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda2023b.png",
+                "car_info": "Škoda Fabia RS Rally2",
+                "team_name": "Recalvi Team"
+            },
+            {
+                "position": "4.",
+                "driver": "Andrea Mabellini",
+                "copilot": "Virginia Lenzi",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/italy.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/italy.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda2023b.png",
+                "car_info": "Škoda Fabia RS Rally2",
+                "team_name": ""
+            },
+            {
+                "position": "5.",
+                "driver": "Mikołaj Marczyk",
+                "copilot": "Szymon Gospodarczyk",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/poland.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/poland.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda2023b.png",
+                "car_info": "Škoda Fabia RS Rally2",
+                "team_name": ""
+            },
+            {
+                "position": "6.",
+                "driver": "Javier Pardo Siota",
+                "copilot": "David de La Puente",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda2023b.png",
+                "car_info": "Škoda Fabia RS Rally2",
+                "team_name": "Recalvi Team"
+            },
+            {
+                "position": "7.",
+                "driver": "Pepe López",
+                "copilot": "David Vázquez",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/spain.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/hyundai2.png",
+                "car_info": "Hyundai i20 N Rally2",
+                "team_name": "Hyundai Motor España"
+            },
+            {
+                "position": "8.",
+                "driver": "Mille Johansson",
+                "copilot": "Johan Grönvall",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/sweden.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/sweden.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/skoda.png",
+                "car_info": "Škoda Fabia Rally2 evo",
+                "team_name": ""
+            },
+            {
+                "position": "9.",
+                "driver": "Mads Østberg",
+                "copilot": "Torstein Eriksen",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/norway.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/norway.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/citroen2009.png",
+                "car_info": "Citroën C3 Rally2",
+                "team_name": "TRT Rally Team"
+            },
+            {
+                "position": "10.",
+                "driver": "Stéphane Lefebvre",
+                "copilot": "Andy Malfoy",
+                "driver_flag": "https://www.ewrc-results.com/images/flags2/france.png",
+                "co_driver_flag": "https://www.ewrc-results.com/images/flags2/france.png",
+                "car_icon": "https://www.ewrc-results.com/images/icon/hyundai2.png",
+                "car_info": "Hyundai i20 N Rally2",
+                "team_name": "Team MRF Tyres"
+            }
+        ]
+    },
+    {
+        "rally_name": "58. Rally de Ourense - Recalvi 2025",
+        "results": []
+    },
+    {
+        "rally_name": "58. Rally Recalvi - Rías Baixas 2025",
+        "results": []
+    },
+    {
+        "rally_name": "62. Rally Blendio Princesa de Asturias - Ciudad de Oviedo 2025",
+        "results": []
+    },
+    {
+        "rally_name": "48. Rally Villa de Llanes 2025",
+        "results": []
+    },
+    {
+        "rally_name": "60. RallyRACC Catalunya - Costa Daurada 2025",
+        "results": []
+    },
+    {
+        "rally_name": "31. Rally de La Nucía Mediterráneo - Costa Blanca 2025",
+        "results": []
+    }
+]
