@@ -6,3 +6,4 @@ urlpatterns = [
     path('copilotos/', CopilotoListView.as_view(), name='copilotos'),
     path('coches/', CocheListView.as_view(), name='coches'),
 ]
+

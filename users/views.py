@@ -1,5 +1,5 @@
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie, csrf_protect
 from django.contrib.auth import authenticate, login
 from .models import User
 from rally.models import FantasyTeam
@@ -30,7 +30,7 @@ def register(request):
     return HttpResponse("Método no permitido", status=405)
 
 
-@csrf_exempt
+@csrf_protect
 def login_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -52,3 +52,9 @@ def login_view(request):
             return HttpResponse("Usuario no encontrado", status=404)
 
     return HttpResponse("Método no permitido", status=405)
+
+
+
+@ensure_csrf_cookie
+def csrf_cookie_view(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})

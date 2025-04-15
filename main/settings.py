@@ -27,8 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_NAME = "csrftoken"
 
 
 # Application definition
