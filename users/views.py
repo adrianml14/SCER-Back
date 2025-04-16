@@ -1,3 +1,4 @@
+import json
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie, csrf_protect
 from django.contrib.auth import authenticate, login
@@ -29,21 +30,25 @@ def register(request):
 
     return HttpResponse("Método no permitido", status=405)
 
+@ensure_csrf_cookie
+def csrf_cookie_view(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})
+
 
 @csrf_protect
 def login_view(request):
     if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-
-        # Buscar al usuario por correo electrónico
         try:
-            # Buscar usuario por correo electrónico
+            data = json.loads(request.body.decode('utf-8'))
+            email = data.get("email")
+            password = data.get("password")
+        except Exception as e:
+            return HttpResponse("Datos inválidos", status=400)
+
+        try:
             user = User.objects.get(email=email)
-            
-            # Autenticación manual: Verificar la contraseña del usuario
+
             if user.check_password(password):
-                # Si la contraseña es correcta, hacer login
                 login(request, user)
                 return HttpResponse("Login exitoso", status=200)
             else:
@@ -52,9 +57,3 @@ def login_view(request):
             return HttpResponse("Usuario no encontrado", status=404)
 
     return HttpResponse("Método no permitido", status=405)
-
-
-
-@ensure_csrf_cookie
-def csrf_cookie_view(request):
-    return JsonResponse({'detail': 'CSRF cookie set'})

@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-_c%&2x3jty9=@x7g1xrb_wosbav%(kpe&^aw-#a0ta4pxnz-ll
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+]
 
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_NAME = "csrftoken"
@@ -145,10 +148,17 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:4200',  # Frontend en desarrollo
+    'http://localhost:4200',
 ]
-CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:4200',  # O tu dirección frontend
+    'http://localhost:4200',
+    'http://127.0.0.1:4200',
 ]
+
+
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'  # <-- MUY IMPORTANTE
+SESSION_COOKIE_SAMESITE = 'Lax'
