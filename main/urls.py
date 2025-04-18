@@ -18,8 +18,6 @@ from django.contrib import admin
 from django.urls import include, path
 from users.views import register, login
 
-
-print("Cargando urls.py de myapp")
 urlpatterns = [
     path('admin/', admin.site.urls),
 

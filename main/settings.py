@@ -161,6 +161,9 @@ CSRF_TRUSTED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None'  # Permite que la cookie de sesión sea enviada con solicitudes de origen cruzado.
+SESSION_COOKIE_SECURE = False  # Si no estás usando HTTPS, esto debe estar en False.
+
+CSRF_COOKIE_SAMESITE = 'None'  # Permite que las cookies CSRF se envíen con solicitudes cruzadas.
+CSRF_COOKIE_HTTPONLY = False 
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
