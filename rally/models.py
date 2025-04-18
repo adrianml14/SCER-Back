@@ -55,4 +55,4 @@ class FantasyTeam(models.Model):
     presupuesto = models.DecimalField(max_digits=10, decimal_places=2, default=1000000.00)
 
     def __str__(self):
-        return f"Equipo de {self.user.name}"
+        return f"Equipo de {self.user.username}"

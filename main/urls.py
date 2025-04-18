@@ -18,11 +18,13 @@ from django.contrib import admin
 from django.urls import include, path
 from users.views import register, login
 
+
+print("Cargando urls.py de myapp")
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     # URLs del módulo de usuarios
-    path('api/users/', include('users.urls')),  # Cambié el prefijo a 'api/users' para evitar conflicto
+    path('api/users/', include('users.urls')),
 
     # URLs del mercado (pilotos, coches, copilotos)
     path('api/rally/', include('rally.urls')),

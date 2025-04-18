@@ -2,18 +2,16 @@ from rest_framework import serializers
 from .models import User
 
 class UserSerializer(serializers.ModelSerializer):
-    # Aseguramos que la contraseña solo se puede escribir, pero no se puede leer
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True)  # Para asegurar que la contraseña no se pueda leer
 
     class Meta:
-        model = User  # El modelo que se va a serializar
-        fields = ('id', 'name', 'email', 'password')  # Los campos a serializar
+        model = User
+        fields = ('id', 'username', 'email', 'password')  # Usamos 'username' en lugar de 'name'
 
-    # Sobrescribimos el método create para encriptar la contraseña
     def create(self, validated_data):
         # Extraemos la contraseña antes de crear el usuario
         password = validated_data.pop('password', None)
-        
+
         # Creamos el usuario con los demás campos
         user = User.objects.create(**validated_data)
 

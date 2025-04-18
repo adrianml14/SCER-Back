@@ -1,19 +1,48 @@
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from django.db import models
-from django.contrib.auth.hashers import make_password, check_password as django_check_password
 
-class User(models.Model):
+class UserManager(BaseUserManager):
+    def create_user(self, email, username, password=None):
+        if not email:
+            raise ValueError("El usuario debe tener un email")
+        email = self.normalize_email(email)
+        user = self.model(email=email, username=username)  # Usamos 'username' aquí
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, username, password):
+        user = self.create_user(email, username, password)  # Usamos 'username' aquí
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
+
+
+class User(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
+    username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(max_length=255, unique=True)
-    password = models.CharField(max_length=255)  # Guardará la contraseña encriptada
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    last_login = models.DateTimeField(auto_now=True, blank=True, null=True)
 
-    def save(self, *args, **kwargs):
-        """Encripta la contraseña antes de guardar el usuario"""
-        self.password = make_password(self.password)
-        super(User, self).save(*args, **kwargs)
+    # Agregar relaciones con groups y user_permissions
+    groups = models.ManyToManyField(
+        Group,
+        related_name='custom_user_groups',  # Cambiar el related_name para evitar conflictos
+        blank=True
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name='custom_user_permissions',  # Cambiar el related_name para evitar conflictos
+        blank=True
+    )
 
-    def check_password(self, raw_password):
-        return django_check_password(raw_password, self.password)
+    objects = UserManager()
+
+    USERNAME_FIELD = 'username'  # Este es el campo que se usará para login
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
-        return self.name
+        return self.email
