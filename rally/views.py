@@ -1,7 +1,12 @@
 from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from .models import Piloto, Copiloto, Coche, FantasyTeam
 from .serializer import PilotoSerializer, CopilotoSerializer, CocheSerializer
+from rest_framework import status
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 
 class PilotoListView(generics.ListAPIView):
@@ -17,62 +22,52 @@ class CocheListView(generics.ListAPIView):
     serializer_class = CocheSerializer
 
 
-@login_required
-def obtener_presupuesto(request):
-    user = request.user
-    try:
-        equipo = FantasyTeam.objects.get(user=user)
-        return JsonResponse({'presupuesto': equipo.presupuesto})
-    except FantasyTeam.DoesNotExist:
-        return JsonResponse({'error': 'No se encontró el equipo'}, status=404)
-    
+class ObtenerPresupuestoView(APIView):
+    permission_classes = [IsAuthenticated]
 
-@login_required
-def comprar_elemento(request, tipo: str, id_elemento: int):
-    user = request.user
+    def get(self, request):
+        user = request.user
+        try:
+            equipo = FantasyTeam.objects.get(user=user)
+            return Response({'presupuesto': equipo.presupuesto})
+        except FantasyTeam.DoesNotExist:
+            return Response({'error': 'No se encontró el equipo'}, status=status.HTTP_404_NOT_FOUND)
 
-    try:
-        equipo = FantasyTeam.objects.get(user=user)
 
-        # Imprimir el presupuesto actual antes de la compra (para depuración)
-        print(f"Presupuesto antes de la compra: {equipo.presupuesto}")
+class ComprarElementoView(APIView):
+    permission_classes = [IsAuthenticated]
 
-        # Obtener el precio y la entidad según el tipo de elemento
-        if tipo == 'piloto':
-            elemento = Piloto.objects.get(id=id_elemento)
-        elif tipo == 'copiloto':
-            elemento = Copiloto.objects.get(id=id_elemento)
-        elif tipo == 'coche':
-            elemento = Coche.objects.get(id=id_elemento)
-        else:
-            return JsonResponse({'error': 'Tipo de elemento no válido'}, status=400)
+    def post(self, request, tipo, id_elemento):
+        user = request.user
 
-        # Verificar si el usuario tiene suficiente presupuesto
-        if equipo.presupuesto < elemento.precio:
-            return JsonResponse({'error': 'No tienes suficiente presupuesto'}, status=400)
+        try:
+            equipo = FantasyTeam.objects.get(user=user)
 
-        # Restar el presupuesto
-        equipo.presupuesto -= elemento.precio
-        equipo.save()
+            if tipo == 'piloto':
+                elemento = Piloto.objects.get(id=id_elemento)
+            elif tipo == 'copiloto':
+                elemento = Copiloto.objects.get(id=id_elemento)
+            elif tipo == 'coche':
+                elemento = Coche.objects.get(id=id_elemento)
+            else:
+                return Response({'error': 'Tipo de elemento no válido'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Imprimir el presupuesto después de la compra (para depuración)
-        print(f"Presupuesto después de la compra: {equipo.presupuesto}")
+            if equipo.presupuesto < elemento.precio:
+                return Response({'error': 'No tienes suficiente presupuesto'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Añadir el elemento al equipo
-        if tipo == 'piloto':
-            equipo.pilotos.add(elemento)
-        elif tipo == 'copiloto':
-            equipo.copilotos.add(elemento)
-        elif tipo == 'coche':
-            equipo.coches.add(elemento)
+            equipo.presupuesto -= elemento.precio
+            equipo.save()
 
-        return JsonResponse({'mensaje': f'{tipo.capitalize()} comprado correctamente'}, status=200)
+            if tipo == 'piloto':
+                equipo.pilotos.add(elemento)
+            elif tipo == 'copiloto':
+                equipo.copilotos.add(elemento)
+            elif tipo == 'coche':
+                equipo.coches.add(elemento)
 
-    except FantasyTeam.DoesNotExist:
-        return JsonResponse({'error': 'Equipo no encontrado'}, status=404)
-    except Piloto.DoesNotExist:
-        return JsonResponse({'error': 'Piloto no encontrado'}, status=404)
-    except Copiloto.DoesNotExist:
-        return JsonResponse({'error': 'Copiloto no encontrado'}, status=404)
-    except Coche.DoesNotExist:
-        return JsonResponse({'error': 'Coche no encontrado'}, status=404)
+            return Response({'mensaje': f'{tipo.capitalize()} comprado correctamente'}, status=status.HTTP_200_OK)
+
+        except FantasyTeam.DoesNotExist:
+            return Response({'error': 'Equipo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        except (Piloto.DoesNotExist, Copiloto.DoesNotExist, Coche.DoesNotExist):
+            return Response({'error': f'{tipo.capitalize()} no encontrado'}, status=status.HTTP_404_NOT_FOUND)

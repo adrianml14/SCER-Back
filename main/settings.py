@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'main',
     'rally',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -167,3 +168,5 @@ SESSION_COOKIE_SECURE = False  # Si no estás usando HTTPS, esto debe estar en F
 CSRF_COOKIE_SAMESITE = 'None'  # Permite que las cookies CSRF se envíen con solicitudes cruzadas.
 CSRF_COOKIE_HTTPONLY = False 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+LOGIN_URL = '/api/users/login/'
