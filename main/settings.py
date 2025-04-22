@@ -151,7 +151,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
-    "http://127.0.0.1:4200",
+    'http://127.0.0.1:4200',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -159,14 +159,14 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:4200',
 ]
 
-
 CORS_ALLOW_CREDENTIALS = True
 
-SESSION_COOKIE_SAMESITE = 'None'  # Permite que la cookie de sesión sea enviada con solicitudes de origen cruzado.
-SESSION_COOKIE_SECURE = False  # Si no estás usando HTTPS, esto debe estar en False.
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False
 
-CSRF_COOKIE_SAMESITE = 'None'  # Permite que las cookies CSRF se envíen con solicitudes cruzadas.
-CSRF_COOKIE_HTTPONLY = False 
+CSRF_COOKIE_SAMESITE = 'Lax'       # 👈 Esta es la buena para local
+CSRF_COOKIE_SECURE = False         # 👈 Solo True si usas HTTPS
+CSRF_COOKIE_HTTPONLY = False       # 👈 Necesario para Angular leerla
+
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-
 LOGIN_URL = '/api/users/login/'

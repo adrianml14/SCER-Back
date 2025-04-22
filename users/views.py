@@ -55,40 +55,24 @@ def current_user(request):
         "email": request.user.email,
     })
 
-
 @require_POST
-@csrf_exempt
+@csrf_protect
 def login_view(request):
-    from django.contrib.auth import login as django_login
-    import json
-
     try:
-        data = json.loads(request.body.decode('utf-8'))
+        data = json.loads(request.body)
         username = data.get("username")
         password = data.get("password")
 
         if not username or not password:
-            return JsonResponse({"message": "Todos los campos son obligatorios"}, status=400)
+            return JsonResponse({"message": "Campos obligatorios"}, status=400)
 
         user = authenticate(request, username=username, password=password)
 
-        if user is not None:
-            # Inicia sesión si quieres mantener sesión también
-            django_login(request, user)
-
-            # Obtiene o crea el token
-            token, _ = Token.objects.get_or_create(user=user)
-
-            return JsonResponse({
-                "message": "Login exitoso",
-                "token": token.key,
-                "username": user.username
-            }, status=200)
+        if user:
+            login(request, user)  # Esto crea la sesión
+            return JsonResponse({"message": "Login exitoso"})
         else:
             return JsonResponse({"message": "Credenciales inválidas"}, status=401)
 
-    except json.JSONDecodeError:
-        return JsonResponse({"message": "Formato JSON inválido"}, status=400)
-
     except Exception as e:
-        return JsonResponse({"message": f"Error del servidor: {str(e)}"}, status=500)
+        return JsonResponse({"message": f"Error: {str(e)}"}, status=500)
