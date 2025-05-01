@@ -6,9 +6,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from rest_framework.authtoken.models import Token
 from django.core.exceptions import ValidationError
-
 from rally.models import FantasyTeam
 from users.models import User
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 
 @require_POST
@@ -48,12 +50,6 @@ def register(request):
 def csrf_cookie_view(request):
     return JsonResponse({'detail': 'CSRF cookie set'})
 
-@login_required
-def current_user(request):
-    return JsonResponse({
-        "username": request.user.username,
-        "email": request.user.email,
-    })
 
 @require_POST
 @csrf_protect
@@ -76,3 +72,13 @@ def login_view(request):
 
     except Exception as e:
         return JsonResponse({"message": f"Error: {str(e)}"}, status=500)
+
+
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({
+            "username": request.user.username,
+            "email": request.user.email,
+        })
