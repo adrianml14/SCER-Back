@@ -27,6 +27,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     last_login = models.DateTimeField(auto_now=True, blank=True, null=True)
 
+    bandera = models.ForeignKey(  # NUEVO CAMPO AÑADIDO
+        'Bandera',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='usuarios'
+    )
+
     # Agregar relaciones con groups y user_permissions
     groups = models.ManyToManyField(
         Group,
@@ -46,3 +54,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+class Bandera(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    imagen_url = models.URLField()
+
+    def __str__(self):
+        return self.nombre

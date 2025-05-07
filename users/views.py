@@ -8,7 +8,10 @@ from rest_framework.authtoken.models import Token
 from django.core.exceptions import ValidationError
 from rally.models import FantasyTeam
 from users.models import User
+from users.models import Bandera
+from users.serializer import BanderaSerializer
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
@@ -82,3 +85,7 @@ class CurrentUserView(APIView):
             "username": request.user.username,
             "email": request.user.email,
         })
+    
+class BanderaListView(ListAPIView):
+    queryset = Bandera.objects.all()
+    serializer_class = BanderaSerializer

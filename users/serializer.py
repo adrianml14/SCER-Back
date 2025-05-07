@@ -1,23 +1,36 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Bandera
+
+class BanderaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bandera
+        fields = ['id', 'nombre', 'imagen_url']
+
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)  # Para asegurar que la contraseña no se pueda leer
+    password = serializers.CharField(write_only=True)
+    bandera = BanderaSerializer(read_only=True)  # Esto muestra la bandera con todos sus datos
+    bandera_id = serializers.PrimaryKeyRelatedField(
+        queryset=Bandera.objects.all(), write_only=True, source='bandera', required=False
+    )  # Esto permite asignarla desde el frontend por ID
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password')  # Usamos 'username' en lugar de 'name'
+        fields = ('id', 'username', 'email', 'password', 'bandera', 'bandera_id')
 
     def create(self, validated_data):
-        # Extraemos la contraseña antes de crear el usuario
         password = validated_data.pop('password', None)
-
-        # Creamos el usuario con los demás campos
-        user = User.objects.create(**validated_data)
-
-        # Establecemos la contraseña (encriptándola)
+        user = User(**validated_data)
         if password:
             user.set_password(password)
-            user.save()
-
+        user.save()
         return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
