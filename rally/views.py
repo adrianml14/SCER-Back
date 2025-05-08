@@ -145,3 +145,32 @@ class VenderElementoView(APIView):
             return Response({'error': 'Equipo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         except (Piloto.DoesNotExist, Copiloto.DoesNotExist, Coche.DoesNotExist):
             return Response({'error': f'{tipo.capitalize()} no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        
+  # nombre del equipo, cambiarlo y verlo            
+class ObtenerNombreEquipoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            equipo = FantasyTeam.objects.get(user=request.user)
+            return Response({'nombre': equipo.nombre})
+        except FantasyTeam.DoesNotExist:
+            return Response({'error': 'Equipo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        
+class CambiarNombreEquipoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        nuevo_nombre = request.data.get("nombre_equipo")
+
+        if not nuevo_nombre:
+            return Response({'error': 'Debes proporcionar un nombre'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            equipo = FantasyTeam.objects.get(user=request.user)
+            equipo.nombre = nuevo_nombre
+            equipo.save()
+            return Response({'mensaje': 'Nombre del equipo actualizado correctamente'})
+        except FantasyTeam.DoesNotExist:
+            return Response({'error': 'Equipo no encontrado'}, status=status.HTTP_404_NOT_FOUND)

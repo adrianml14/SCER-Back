@@ -49,10 +49,11 @@ class ParticipacionRally(models.Model):
 
 class FantasyTeam(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=255, default="Mi equipo")
     pilotos = models.ManyToManyField(Piloto, blank=True)
     copilotos = models.ManyToManyField(Copiloto, blank=True)
     coches = models.ManyToManyField(Coche, blank=True)
     presupuesto = models.DecimalField(max_digits=10, decimal_places=2, default=1000000.00)
 
     def __str__(self):
-        return f"Equipo de {self.user.username}"
+        return f"{self.nombre} ({self.user.username})"
