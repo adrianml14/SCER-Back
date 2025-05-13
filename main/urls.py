@@ -26,4 +26,7 @@ urlpatterns = [
 
     # URLs del mercado (pilotos, coches, copilotos)
     path('api/rally/', include('rally.urls')),
+
+    path('api/ligas/', include('ligas.urls')),
+
 ]

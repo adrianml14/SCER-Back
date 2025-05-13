@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'main',
     'rally',
     'rest_framework.authtoken',
+    'ligas',
 ]
 
 MIDDLEWARE = [
@@ -164,9 +165,9 @@ CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = False
 
-CSRF_COOKIE_SAMESITE = 'Lax'       # 👈 Esta es la buena para local
-CSRF_COOKIE_SECURE = False         # 👈 Solo True si usas HTTPS
-CSRF_COOKIE_HTTPONLY = False       # 👈 Necesario para Angular leerla
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False  
+CSRF_COOKIE_HTTPONLY = False  
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 LOGIN_URL = '/api/users/login/'
