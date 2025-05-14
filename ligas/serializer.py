@@ -6,10 +6,16 @@ User = get_user_model()
 
 class LigaSerializer(serializers.ModelSerializer):
     dueño = serializers.ReadOnlyField(source='dueño.username')
+    num_participantes = serializers.SerializerMethodField()
+    codigo_unico = serializers.CharField(read_only=True)
 
     class Meta:
         model = Liga
-        fields = ['id', 'nombre', 'dueño', 'fecha_creacion']
+        fields = ['id', 'nombre', 'dueño', 'fecha_creacion', 'num_participantes', 'codigo_unico']
+
+    def get_num_participantes(self, obj):
+        return obj.participantes.count()
+
 
 class ParticipacionLigaSerializer(serializers.ModelSerializer):
     usuario = serializers.ReadOnlyField(source='usuario.username')
