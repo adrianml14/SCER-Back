@@ -39,8 +39,19 @@ class MisLigasView(generics.ListAPIView):
 
 User = get_user_model()
 
+
 class GestionParticipantesView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, liga_id):
+        """Listar todos los participantes de una liga"""
+        liga = get_object_or_404(Liga, id=liga_id)
+        if not ParticipacionLiga.objects.filter(liga=liga).exists():
+            return Response({'mensaje': 'No hay participantes en esta liga.'}, status=200)
+
+        participantes = ParticipacionLiga.objects.filter(liga=liga)
+        serializer = ParticipacionLigaSerializer(participantes, many=True)
+        return Response(serializer.data, status=200)
 
     def post(self, request, liga_id):
         """Añadir usuario a una liga (solo dueño)"""

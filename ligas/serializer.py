@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Liga, ParticipacionLiga
 from django.contrib.auth import get_user_model
+from rally.models import FantasyTeam 
 
 User = get_user_model()
 
@@ -20,14 +21,16 @@ class LigaSerializer(serializers.ModelSerializer):
 class ParticipacionLigaSerializer(serializers.ModelSerializer):
     usuario = serializers.ReadOnlyField(source='usuario.username')
     liga_nombre = serializers.ReadOnlyField(source='liga.nombre')
+    equipo_nombre = serializers.SerializerMethodField()  # Nuevo campo
 
     class Meta:
         model = ParticipacionLiga
-        fields = ['id', 'usuario', 'liga', 'liga_nombre', 'fecha_union', 'puntos']
+        fields = ['id', 'usuario', 'liga', 'liga_nombre', 'equipo_nombre', 'fecha_union', 'puntos']
 
-    def validate(self, attrs):
-        # Validar si el usuario ya está en la liga
-        if ParticipacionLiga.objects.filter(usuario=attrs['usuario'], liga=attrs['liga']).exists():
-            raise serializers.ValidationError("El usuario ya está en esta liga.")
-        return attrs
+    def get_equipo_nombre(self, obj):
+        try:
+            return obj.usuario.fantasyteam.nombre
+        except FantasyTeam.DoesNotExist:
+            return "Sin equipo"
+
 
