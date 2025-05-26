@@ -19,7 +19,7 @@ class Command(BaseCommand):
         page_urls = [
             "https://www.ewrc-results.com/entries/92248-rallye-tierras-altas-de-lorca-2025/?sct=1512",
             "https://www.ewrc-results.com/entries/91078-rally-sierra-morena-cordoba-patrimonio-de-la-humanidad-2025/?sct=1512",
-            # Puedes agregar más URLs aquí
+            
         ]
 
         # Lista para almacenar los datos
