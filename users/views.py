@@ -34,9 +34,7 @@ def register(request):
         if len(password) < 6:
             return JsonResponse({"error": "La contraseña debe tener al menos 6 caracteres"}, status=400)
 
-        user = User(username=username, email=email)  # Usé 'email' y 'username' para crear el usuario
-        user.set_password(password)
-        user.save()
+        user = User.objects.create_user(username=username, email=email, password=password)
 
         # Crear equipo de fantasía con presupuesto inicial
         FantasyTeam.objects.create(user=user, presupuesto=1000000.00)

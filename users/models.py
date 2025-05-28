@@ -28,13 +28,15 @@ class UserManager(BaseUserManager):
         user = self.model(email=email, username=username)
         user.set_password(password)
         user.save(using=self._db)
-        return user
 
-    def create_superuser(self, email, username, password):
-        user = self.create_user(email, username, password)
-        user.is_staff = True
-        user.is_superuser = True
-        user.save(using=self._db)
+        # 🔽 Asignar rol por defecto
+        try:
+            rol_usuario = Rol.objects.get(nombre="Usuario")  # o id=1
+            UsuarioRol.objects.create(usuario=user, rol=rol_usuario)
+        except Rol.DoesNotExist:
+            # Opcional: puedes registrar un warning aquí
+            pass
+
         return user
 
 # Modelo de usuario
