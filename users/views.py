@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from users.models import Rol
 
 
 @require_POST
@@ -79,10 +80,13 @@ class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        rol = request.user.roles.first()
         return Response({
             "username": request.user.username,
             "email": request.user.email,
+            "rol": rol.nombre if rol else None
         })
+
     
 class BanderaListView(ListAPIView):
     queryset = Bandera.objects.all()

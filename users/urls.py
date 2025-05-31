@@ -9,5 +9,4 @@ urlpatterns = [
     path('csrf/', views.csrf_cookie_view, name='csrf'),
     path('me/', CurrentUserView.as_view(), name='current-user'),
     path('banderas/', BanderaListView.as_view(), name='bandera-list'),
-
 ]

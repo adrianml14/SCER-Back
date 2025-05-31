@@ -6,17 +6,20 @@ class BanderaSerializer(serializers.ModelSerializer):
         model = Bandera
         fields = ['id', 'nombre', 'imagen_url']
 
-
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    bandera = BanderaSerializer(read_only=True)  # Esto muestra la bandera con todos sus datos
+    bandera = BanderaSerializer(read_only=True)
     bandera_id = serializers.PrimaryKeyRelatedField(
         queryset=Bandera.objects.all(), write_only=True, source='bandera', required=False
-    )  # Esto permite asignarla desde el frontend por ID
+    )
+
+    rol = serializers.CharField(source='rol_nombre', read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'bandera', 'bandera_id')
+        fields = ('id', 'username', 'email', 'password', 'bandera', 'bandera_id', 'rol')
+
+
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)

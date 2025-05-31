@@ -81,6 +81,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+    @property
+    def rol_nombre(self):
+        rol = self.roles.first()
+        return rol.nombre if rol else None
 
 # Modelo bandera
 class Bandera(models.Model):
@@ -89,3 +94,4 @@ class Bandera(models.Model):
 
     def __str__(self):
         return self.nombre
+
