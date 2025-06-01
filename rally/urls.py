@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CambiarNombreEquipoView, ComprarElementoView, MisCochesView, MisCopilotosView, MisPilotosView, ObtenerNombreEquipoView, ObtenerPresupuestoView, PilotoListView, CopilotoListView, CocheListView, VenderElementoView
+from .views import CambiarNombreEquipoView, ComprarElementoView, MisCochesView, MisCopilotosView, MisEquiposPorRallyView, MisPilotosView, ObtenerNombreEquipoView, ObtenerPresupuestoView, PilotoListView, CopilotoListView, CocheListView, VenderElementoView
 from rally import views
 
 urlpatterns = [
@@ -21,6 +21,9 @@ urlpatterns = [
     # cambiar nombre del equipo
     path('cambiar-nombre-equipo/', CambiarNombreEquipoView.as_view(), name='cambiar-nombre-equipo'),
     path('nombre-equipo/', ObtenerNombreEquipoView.as_view(), name='nombre-equipo'),
+
+    # historico de equipos en rallyes
+    path('fantasy/rally/mis-equipos/', MisEquiposPorRallyView.as_view(), name='mis_equipos_rally'),
 
 ]
 

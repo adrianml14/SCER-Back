@@ -2,8 +2,8 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Piloto, Copiloto, Coche, FantasyTeam
-from .serializer import PilotoSerializer, CopilotoSerializer, CocheSerializer
+from .models import FantasyTeamRally, Piloto, Copiloto, Coche, FantasyTeam
+from .serializer import FantasyTeamRallySerializer, PilotoSerializer, CopilotoSerializer, CocheSerializer
 from rest_framework import status
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -174,3 +174,28 @@ class CambiarNombreEquipoView(APIView):
             return Response({'mensaje': 'Nombre del equipo actualizado correctamente'})
         except FantasyTeam.DoesNotExist:
             return Response({'error': 'Equipo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+class MisEquiposPorRallyView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = FantasyTeamRallySerializer
+
+    def get_queryset(self):
+        return FantasyTeamRally.objects.filter(user=self.request.user).order_by('-rally__id')
+    
+class ActualizarEquipoRallyView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = FantasyTeamRallySerializer
+    queryset = FantasyTeamRally.objects.all()
+
+    def get_object(self):
+        # El usuario sólo puede modificar su propio equipo para un rally específico
+        user = self.request.user
+        rally_id = self.kwargs.get('rally_id')
+        obj, created = FantasyTeamRally.objects.get_or_create(user=user, rally_id=rally_id)
+        return obj
+
+    def perform_update(self, serializer):
+        # Guarda cambios y luego actualiza puntos
+        serializer.save()
+        equipo = serializer.instance
+        equipo.actualizar_puntos()
