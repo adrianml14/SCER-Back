@@ -7,14 +7,14 @@ from django.contrib.auth import authenticate, login
 from rest_framework.authtoken.models import Token
 from django.core.exceptions import ValidationError
 from rally.models import FantasyTeam
-from users.models import User
+from users.models import User, UsuarioRol, Rol
 from users.models import Bandera
 from users.serializer import BanderaSerializer
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from users.models import Rol
+
 
 
 @require_POST
@@ -91,3 +91,30 @@ class CurrentUserView(APIView):
 class BanderaListView(ListAPIView):
     queryset = Bandera.objects.all()
     serializer_class = BanderaSerializer
+
+
+class ToggleVIPView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        rol_vip, _ = Rol.objects.get_or_create(nombre="VIP")
+        rol_usuario, _ = Rol.objects.get_or_create(nombre="Usuario")
+
+        # Obtener el rol actual
+        rol_actual = user.roles.first()
+
+        # Eliminar roles actuales
+        UsuarioRol.objects.filter(usuario=user).delete()
+
+        if rol_actual == rol_vip:
+            UsuarioRol.objects.create(usuario=user, rol=rol_usuario)
+            nuevo_rol = 'Usuario'
+        else:
+            UsuarioRol.objects.create(usuario=user, rol=rol_vip)
+            nuevo_rol = 'VIP'
+
+        return Response({
+            "mensaje": f"Tu rol ha sido cambiado a {nuevo_rol}",
+            "nuevo_rol": nuevo_rol
+        })

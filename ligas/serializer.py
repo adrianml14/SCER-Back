@@ -8,7 +8,7 @@ User = get_user_model()
 class LigaSerializer(serializers.ModelSerializer):
     dueño = serializers.ReadOnlyField(source='dueño.username')
     num_participantes = serializers.SerializerMethodField()
-    codigo_unico = serializers.CharField(read_only=True)
+    codigo_unico = serializers.SerializerMethodField()
 
     class Meta:
         model = Liga
@@ -17,15 +17,31 @@ class LigaSerializer(serializers.ModelSerializer):
     def get_num_participantes(self, obj):
         return obj.participantes.count()
 
+    def get_codigo_unico(self, obj):
+        request = self.context.get('request')
+        if request and obj.dueño == request.user:
+            return obj.codigo_unico
+        return None
+
 
 class ParticipacionLigaSerializer(serializers.ModelSerializer):
     usuario = serializers.ReadOnlyField(source='usuario.username')
     liga_nombre = serializers.ReadOnlyField(source='liga.nombre')
-    equipo_nombre = serializers.SerializerMethodField()  # Nuevo campo
+    codigo_unico = serializers.SerializerMethodField()
+    equipo_nombre = serializers.SerializerMethodField()
 
     class Meta:
         model = ParticipacionLiga
-        fields = ['id', 'usuario', 'liga', 'liga_nombre', 'equipo_nombre', 'fecha_union', 'puntos']
+        fields = [
+            'id',
+            'usuario',
+            'liga',
+            'liga_nombre',
+            'codigo_unico',
+            'equipo_nombre',
+            'fecha_union',
+            'puntos'
+        ]
 
     def get_equipo_nombre(self, obj):
         try:
@@ -33,4 +49,13 @@ class ParticipacionLigaSerializer(serializers.ModelSerializer):
         except FantasyTeam.DoesNotExist:
             return "Sin equipo"
 
+    def get_codigo_unico(self, obj):
+        request = self.context.get('request')
+        if request and obj.liga.dueño == request.user:
+            return obj.liga.codigo_unico
+        return None
 
+
+class ClasificacionGeneralSerializer(serializers.Serializer):
+    usuario = serializers.CharField()
+    puntos_totales = serializers.IntegerField()

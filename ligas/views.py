@@ -6,10 +6,12 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
 from .models import Liga, ParticipacionLiga
-from .serializer import LigaSerializer, ParticipacionLigaSerializer
+from .serializer import ClasificacionGeneralSerializer, LigaSerializer, ParticipacionLigaSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
+from django.db.models import Sum
+
 
 class LigaListCreateView(generics.ListCreateAPIView):
     queryset = Liga.objects.all()
@@ -20,6 +22,11 @@ class LigaListCreateView(generics.ListCreateAPIView):
         liga = serializer.save(dueño=self.request.user)
         # Añadir al dueño como participante automáticamente
         ParticipacionLiga.objects.create(usuario=self.request.user, liga=liga)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 class ParticipacionLigaCreateView(generics.CreateAPIView):
     serializer_class = ParticipacionLigaSerializer
@@ -34,6 +41,11 @@ class MisLigasView(generics.ListAPIView):
 
     def get_queryset(self):
         return ParticipacionLiga.objects.filter(usuario=self.request.user)
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request  # 👈 necesario para saber quién hace la petición
+        return context
 
 
 
@@ -104,3 +116,24 @@ def unirse_por_codigo(request):
 
     ParticipacionLiga.objects.create(usuario=request.user, liga=liga)
     return Response({'mensaje': f'Te has unido a la liga "{liga.nombre}".'}, status=201)
+
+
+class ClasificacionGeneralView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        clasificacion = (
+            ParticipacionLiga.objects
+            .values('usuario__username')  # agrupamos por username
+            .annotate(puntos_totales=Sum('puntos'))
+            .order_by('-puntos_totales')
+        )
+
+        # Renombramos el campo para que encaje con el serializador
+        clasificacion_formateada = [
+            {'usuario': item['usuario__username'], 'puntos_totales': item['puntos_totales']}
+            for item in clasificacion
+        ]
+
+        serializer = ClasificacionGeneralSerializer(clasificacion_formateada, many=True)
+        return Response(serializer.data)
