@@ -1,25 +1,40 @@
 from rest_framework import serializers
-from .models import FantasyTeamRally, Piloto, Copiloto, Coche
+from .models import FantasyTeamRally, Piloto, Copiloto, Coche, ParticipacionRally
 
 class PilotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Piloto
-        fields = ('id', 'nombre', 'bandera', 'precio')  # si equipo está en el modelo
+        fields = ('id', 'nombre', 'bandera', 'precio', 'puntos_totales')
+
 
 class CopilotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Copiloto
-        fields = ('id', 'nombre', 'bandera', 'precio')
+        fields = ('id', 'nombre', 'bandera', 'precio', 'puntos_totales')
+
 
 class CocheSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coche
-        fields = ('id', 'modelo', 'imagen', 'precio')
+        fields = ('id', 'modelo', 'imagen', 'precio', 'puntos_totales')
+
 
 class FantasyTeamRallySerializer(serializers.ModelSerializer):
-    pilotos = serializers.PrimaryKeyRelatedField(many=True, queryset=Piloto.objects.all())
-    copilotos = serializers.PrimaryKeyRelatedField(many=True, queryset=Copiloto.objects.all())
-    coches = serializers.PrimaryKeyRelatedField(many=True, queryset=Coche.objects.all())
+    # Aquí usamos los serializers completos en lugar de los IDs
+    pilotos = PilotoSerializer(many=True, read_only=True)
+    copilotos = CopilotoSerializer(many=True, read_only=True)
+    coches = CocheSerializer(many=True, read_only=True)
+
+    # Para updates, necesitamos campos adicionales de solo escritura
+    piloto_ids = serializers.PrimaryKeyRelatedField(
+        many=True, write_only=True, queryset=Piloto.objects.all(), source='pilotos'
+    )
+    copiloto_ids = serializers.PrimaryKeyRelatedField(
+        many=True, write_only=True, queryset=Copiloto.objects.all(), source='copilotos'
+    )
+    coche_ids = serializers.PrimaryKeyRelatedField(
+        many=True, write_only=True, queryset=Coche.objects.all(), source='coches'
+    )
 
     rally_nombre = serializers.CharField(source='rally.nombre', read_only=True)
     user_username = serializers.CharField(source='user.username', read_only=True)
@@ -28,11 +43,9 @@ class FantasyTeamRallySerializer(serializers.ModelSerializer):
         model = FantasyTeamRally
         fields = (
             'id', 'user', 'user_username', 'rally', 'rally_nombre',
-            'pilotos', 'copilotos', 'coches', 'puntos'
+            'pilotos', 'copilotos', 'coches', 'puntos',
+            'piloto_ids', 'copiloto_ids', 'coche_ids',
         )
-
-
-from .models import ParticipacionRally, Rally
 
 
 class ParticipacionPilotoSerializer(serializers.ModelSerializer):
