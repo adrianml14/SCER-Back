@@ -30,3 +30,33 @@ class FantasyTeamRallySerializer(serializers.ModelSerializer):
             'id', 'user', 'user_username', 'rally', 'rally_nombre',
             'pilotos', 'copilotos', 'coches', 'puntos'
         )
+
+
+from .models import ParticipacionRally, Rally
+
+
+class ParticipacionPilotoSerializer(serializers.ModelSerializer):
+    piloto = PilotoSerializer(read_only=True)
+    rally_nombre = serializers.CharField(source='rally.nombre', read_only=True)
+
+    class Meta:
+        model = ParticipacionRally
+        fields = ('id', 'rally', 'rally_nombre', 'piloto', 'posicion', 'puntos')
+
+
+class ParticipacionCopilotoSerializer(serializers.ModelSerializer):
+    copiloto = CopilotoSerializer(read_only=True)
+    rally_nombre = serializers.CharField(source='rally.nombre', read_only=True)
+
+    class Meta:
+        model = ParticipacionRally
+        fields = ('id', 'rally', 'rally_nombre', 'copiloto', 'posicion', 'puntos')
+
+
+class ParticipacionCocheSerializer(serializers.ModelSerializer):
+    coche = CocheSerializer(read_only=True)
+    rally_nombre = serializers.CharField(source='rally.nombre', read_only=True)
+
+    class Meta:
+        model = ParticipacionRally
+        fields = ('id', 'rally', 'rally_nombre', 'coche', 'posicion', 'puntos')

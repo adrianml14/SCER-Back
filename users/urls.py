@@ -10,5 +10,4 @@ urlpatterns = [
     path('me/', CurrentUserView.as_view(), name='current-user'),
     path('banderas/', BanderaListView.as_view(), name='bandera-list'),
     path('cambiar-rol/', ToggleVIPView.as_view(), name='cambiar-rol'), 
-
 ]

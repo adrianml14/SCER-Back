@@ -19,6 +19,10 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'email', 'password', 'bandera', 'bandera_id', 'rol')
 
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Este correo ya está registrado.")
+        return value
 
 
     def create(self, validated_data):

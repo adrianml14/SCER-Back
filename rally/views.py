@@ -2,8 +2,8 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import FantasyTeamRally, Piloto, Copiloto, Coche, FantasyTeam
-from .serializer import FantasyTeamRallySerializer, PilotoSerializer, CopilotoSerializer, CocheSerializer
+from .models import FantasyTeamRally, ParticipacionRally, Piloto, Copiloto, Coche, FantasyTeam
+from .serializer import FantasyTeamRallySerializer, ParticipacionCocheSerializer, ParticipacionCopilotoSerializer, ParticipacionPilotoSerializer, PilotoSerializer, CopilotoSerializer, CocheSerializer
 from rest_framework import status
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -199,3 +199,26 @@ class ActualizarEquipoRallyView(generics.UpdateAPIView):
         serializer.save()
         equipo = serializer.instance
         equipo.actualizar_puntos()
+
+class HistoricoPilotoView(generics.ListAPIView):
+    serializer_class = ParticipacionPilotoSerializer
+
+    def get_queryset(self):
+        piloto_id = self.kwargs.get('piloto_id')
+        return ParticipacionRally.objects.filter(piloto__id=piloto_id).order_by('-rally__id')
+
+
+class HistoricoCopilotoView(generics.ListAPIView):
+    serializer_class = ParticipacionCopilotoSerializer
+
+    def get_queryset(self):
+        copiloto_id = self.kwargs.get('copiloto_id')
+        return ParticipacionRally.objects.filter(copiloto__id=copiloto_id).order_by('-rally__id')
+
+
+class HistoricoCocheView(generics.ListAPIView):
+    serializer_class = ParticipacionCocheSerializer
+
+    def get_queryset(self):
+        coche_id = self.kwargs.get('coche_id')
+        return ParticipacionRally.objects.filter(coche__id=coche_id).order_by('-rally__id')
