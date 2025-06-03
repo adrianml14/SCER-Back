@@ -59,3 +59,4 @@ class ParticipacionLigaSerializer(serializers.ModelSerializer):
 class ClasificacionGeneralSerializer(serializers.Serializer):
     usuario = serializers.CharField()
     puntos_totales = serializers.IntegerField()
+    equipo_nombre = serializers.CharField()

@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+
+from rally.models import FantasyTeam
 from .models import Liga, ParticipacionLiga
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
@@ -108,7 +110,7 @@ def unirse_por_codigo(request):
     try:
         liga = Liga.objects.get(codigo_unico=codigo)
     except Liga.DoesNotExist:
-        return Response({'error': 'Liga no encontrada con ese código'}, status=404)
+        return Response({'error': 'Codigo Incorrecto'}, status=404)
 
     # Evitar duplicados
     if ParticipacionLiga.objects.filter(usuario=request.user, liga=liga).exists():
@@ -124,16 +126,36 @@ class ClasificacionGeneralView(APIView):
     def get(self, request):
         clasificacion = (
             ParticipacionLiga.objects
-            .values('usuario__username')  # agrupamos por username
+            .values('usuario__id', 'usuario__username')
             .annotate(puntos_totales=Sum('puntos'))
             .order_by('-puntos_totales')
         )
 
-        # Renombramos el campo para que encaje con el serializador
+        user_ids = [item['usuario__id'] for item in clasificacion]
+
+        equipos = {e.user_id: e.nombre for e in FantasyTeam.objects.filter(user_id__in=user_ids)}
+
         clasificacion_formateada = [
-            {'usuario': item['usuario__username'], 'puntos_totales': item['puntos_totales']}
+            {
+                'usuario': item['usuario__username'],
+                'puntos_totales': item['puntos_totales'],
+                'equipo_nombre': equipos.get(item['usuario__id'], 'Sin equipo')
+            }
             for item in clasificacion
         ]
 
         serializer = ClasificacionGeneralSerializer(clasificacion_formateada, many=True)
         return Response(serializer.data)
+    
+class SalirDeLigaView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, liga_id):
+        liga = get_object_or_404(Liga, id=liga_id)
+
+        participacion = ParticipacionLiga.objects.filter(usuario=request.user, liga=liga).first()
+        if not participacion:
+            return Response({'error': 'No participas en esta liga.'}, status=404)
+
+        participacion.delete()
+        return Response({'mensaje': 'Has salido de la liga correctamente.'}, status=200)
