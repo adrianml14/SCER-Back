@@ -118,3 +118,36 @@ class ToggleVIPView(APIView):
             "mensaje": f"Tu rol ha sido cambiado a {nuevo_rol}",
             "nuevo_rol": nuevo_rol
         })
+    
+class ToggleAdminView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        rol_admin, _ = Rol.objects.get_or_create(nombre="Administrador")
+        rol_usuario, _ = Rol.objects.get_or_create(nombre="Usuario")
+
+        rol_actual = user.roles.first()
+
+        # Si NO es admin, requiere clave
+        if rol_actual != rol_admin:
+            clave_admin = request.data.get("clave")
+            if clave_admin != "3313":
+                return Response({
+                    "mensaje": "Clave incorrecta. No tienes permiso para convertirte en administrador."
+                }, status=403)
+
+        # Eliminar todos los roles actuales
+        UsuarioRol.objects.filter(usuario=user).delete()
+
+        if rol_actual == rol_admin:
+            UsuarioRol.objects.create(usuario=user, rol=rol_usuario)
+            nuevo_rol = 'Usuario'
+        else:
+            UsuarioRol.objects.create(usuario=user, rol=rol_admin)
+            nuevo_rol = 'Administrador'
+
+        return Response({
+            "mensaje": f"Tu rol ha sido cambiado a {nuevo_rol}",
+            "nuevo_rol": nuevo_rol
+        })

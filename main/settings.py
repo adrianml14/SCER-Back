@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rally',
     'rest_framework.authtoken',
     'ligas',
+    'bug_reports',
 ]
 
 MIDDLEWARE = [
