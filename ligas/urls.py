@@ -9,5 +9,4 @@ urlpatterns = [
     path('<int:liga_id>/participantes/', GestionParticipantesView.as_view(), name='gestionar_participantes'),
     path('clasificacion-general/', ClasificacionGeneralView.as_view(), name='clasificacion-general'),
     path('<int:liga_id>/salir/', SalirDeLigaView.as_view(), name='salir-de-liga'),
-
 ]

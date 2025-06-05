@@ -11,5 +11,4 @@ urlpatterns = [
     path('banderas/', BanderaListView.as_view(), name='bandera-list'),
     path('cambiar-rol/', ToggleVIPView.as_view(), name='cambiar-rol'),
     path('cambiar-admin/', ToggleAdminView.as_view(), name='cambiar-admin'),
- 
 ]

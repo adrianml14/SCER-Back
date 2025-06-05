@@ -168,3 +168,4 @@ class FantasyTeamRally(models.Model):
     def actualizar_puntos(self):
         self.puntos = self.calcular_puntos_equipo()
         self.save(update_fields=['puntos'])
+
