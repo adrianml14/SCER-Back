@@ -19,11 +19,13 @@ class Command(BaseCommand):
         page_urls = [
             "https://www.ewrc-results.com/entries/92248-rallye-tierras-altas-de-lorca-2025/?sct=1512",
             "https://www.ewrc-results.com/entries/91078-rally-sierra-morena-cordoba-patrimonio-de-la-humanidad-2025/?sct=1512",
-            
+            "https://www.ewrc-results.com/entries/92250-rally-de-ourense-recalvi-2025/?sct=1512",
+            "https://www.ewrc-results.com/entries/92251-rally-recalvi-rias-baixas-2025/?sct=1512",
+            "https://www.ewrc-results.com/entries/92253-rally-blendio-princesa-de-asturias-ciudad-de-oviedo-2025/?sct=1512",
+            "https://www.ewrc-results.com/entries/92275-rally-villa-de-llanes-2025/?sct=1512",
+            "https://www.ewrc-results.com/entries/92277-rallyracc-catalunya-costa-daurada-2025/?sct=1512",
+            "https://www.ewrc-results.com/entries/92278-rally-de-la-nucia-mediterraneo-costa-blanca-2025/?sct=1512",
         ]
-
-        # Lista para almacenar los datos
-        rallies_data = []
 
         # Función para formatear el nombre correctamente
         def format_name(full_name):
@@ -120,9 +122,19 @@ class Command(BaseCommand):
                 driver.get(url)
                 rally_name, results_data = extract_data_from_page()
 
+                if not rally_name:
+                    self.stdout.write(self.style.WARNING(f"No se pudo obtener el nombre del rally en la página: {url}"))
+                    continue
+
                 if results_data:
-                    # Guardamos los datos en la base de datos
-                    rally_obj, _ = Rally.objects.get_or_create(nombre=rally_name)
+                    # Intentamos obtener el rally EXISTENTE por nombre, no creamos ni modificamos nada
+                    try:
+                        rally_obj = Rally.objects.get(nombre=rally_name)
+                    except Rally.DoesNotExist:
+                        self.stdout.write(self.style.WARNING(
+                            f"El rally '{rally_name}' no está en la base de datos. Se omite esta página."
+                        ))
+                        continue  # Saltar esta URL si no existe el rally
 
                     for entry in results_data:
                         piloto, _ = Piloto.objects.get_or_create(

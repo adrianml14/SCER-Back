@@ -1,5 +1,9 @@
+from decimal import Decimal
 from django.db import models
 from users.models import User
+
+MIN_PRECIO = Decimal('100000.00')  # valor mínimo fijo para precio
+
 
 class Piloto(models.Model):
     nombre = models.CharField(max_length=255)
@@ -15,6 +19,16 @@ class Piloto(models.Model):
         self.puntos_totales = total
         self.save(update_fields=['puntos_totales'])
 
+    def ajustar_precio_por_rendimiento(self, puntos):
+        if puntos > 0:
+            incremento = (Decimal(puntos) / Decimal(10)) * Decimal('0.02') * self.precio
+            self.precio += incremento
+        else:
+            nuevo_precio = self.precio * Decimal('0.95')
+            self.precio = max(nuevo_precio, MIN_PRECIO)
+
+        self.save(update_fields=["precio"])
+
 
 class Copiloto(models.Model):
     nombre = models.CharField(max_length=255)
@@ -29,6 +43,21 @@ class Copiloto(models.Model):
         total = sum(p.puntos for p in self.participacionrally_set.all())
         self.puntos_totales = total
         self.save(update_fields=['puntos_totales'])
+
+    def ajustar_precio_por_rendimiento(self, puntos):
+        if puntos > 0:
+            incremento = (Decimal(puntos) / Decimal(10)) * Decimal('0.02') * self.precio
+            self.precio += incremento
+        else:
+            nuevo_precio = self.precio * Decimal('0.95')
+            self.precio = max(nuevo_precio, MIN_PRECIO)
+
+        # Forzar que precio mínimo sea respetado siempre
+        if self.precio < MIN_PRECIO:
+            self.precio = MIN_PRECIO
+
+        self.save(update_fields=["precio"])
+
 
 
 class Coche(models.Model):
@@ -48,6 +77,8 @@ class Coche(models.Model):
 
 class Rally(models.Model):
     nombre = models.CharField(max_length=255)
+    fecha_inicio = models.DateField(null=True, blank=True)
+    fecha_fin = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.nombre
@@ -89,11 +120,14 @@ class ParticipacionRally(models.Model):
         # Actualiza los puntos totales acumulados de cada participante
         if self.piloto:
             self.piloto.actualizar_puntos_totales()
+            self.piloto.ajustar_precio_por_rendimiento(self.puntos)
+
         if self.copiloto:
             self.copiloto.actualizar_puntos_totales()
+            self.copiloto.ajustar_precio_por_rendimiento(self.puntos)
+
         if self.coche:
             self.coche.actualizar_puntos_totales()
-
 
 
 class FantasyTeam(models.Model):
@@ -126,7 +160,6 @@ class FantasyTeamRally(models.Model):
         return f"{self.user.username} - {self.rally.nombre} - Puntos: {self.puntos}"
 
     def calcular_puntos_equipo(self):
-        # Calcula los puntos totales del equipo fantasy para este rally
         puntos_pilotos = sum(p.puntos for p in self.pilotos.all())
         puntos_copilotos = sum(c.puntos for c in self.copilotos.all())
         puntos_coches = sum(co.puntos for co in self.coches.all())
