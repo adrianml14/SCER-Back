@@ -1,3 +1,4 @@
+from datetime import timezone
 import random
 import string
 from django.shortcuts import render
@@ -31,4 +32,18 @@ class ParticipacionLiga(models.Model):
 
     class Meta:
         unique_together = ('usuario', 'liga')
+
+    def actualizar_puntos_totales(self):
+        """Suma los puntos de todos los FantasyTeamRally del usuario que coincidan con rallies ya jugados."""
+        from rally.models import FantasyTeamRally  # Import aquí para evitar ciclos
+
+        # Filtrar solo rallies jugados (con fecha de fin pasada)
+        equipos = FantasyTeamRally.objects.filter(
+            user=self.usuario,
+            rally__fecha_fin__lte=timezone.now()
+        )
+
+        total_puntos = sum(equipo.puntos for equipo in equipos)
+        self.puntos = total_puntos
+        self.save(update_fields=["puntos"])
 

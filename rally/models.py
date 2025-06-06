@@ -161,10 +161,27 @@ class FantasyTeamRally(models.Model):
         return f"{self.user.username} - {self.rally.nombre} - Puntos: {self.puntos}"
 
     def calcular_puntos_equipo(self):
-        puntos_pilotos = sum(p.puntos for p in self.pilotos.all())
-        puntos_copilotos = sum(c.puntos for c in self.copilotos.all())
-        puntos_coches = sum(co.puntos for co in self.coches.all())
-        return puntos_pilotos + puntos_copilotos + puntos_coches
+        puntos_totales = 0
+
+        # Sumar puntos de pilotos en el rally
+        for piloto in self.pilotos.all():
+            participacion = ParticipacionRally.objects.filter(rally=self.rally, piloto=piloto).first()
+            if participacion:
+                puntos_totales += participacion.puntos
+
+        # Sumar puntos de copilotos en el rally
+        for copiloto in self.copilotos.all():
+            participacion = ParticipacionRally.objects.filter(rally=self.rally, copiloto=copiloto).first()
+            if participacion:
+                puntos_totales += participacion.puntos
+
+        # Sumar puntos de coches en el rally
+        for coche in self.coches.all():
+            participacion = ParticipacionRally.objects.filter(rally=self.rally, coche=coche).first()
+            if participacion:
+                puntos_totales += participacion.puntos
+
+        return puntos_totales
 
     def actualizar_puntos(self):
         self.puntos = self.calcular_puntos_equipo()
