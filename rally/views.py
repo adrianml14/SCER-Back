@@ -1,7 +1,10 @@
+from datetime import date
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+from users.models import User
 from .models import FantasyTeam, FantasyTeamRally, ParticipacionRally, Piloto, Copiloto, Coche, Rally
 from .serializer import (
     FantasyTeamRallySerializer,
@@ -86,21 +89,27 @@ class ComprarElementoView(APIView):
 
             if tipo == 'piloto':
                 elemento = Piloto.objects.get(id=id_elemento)
-                equipo.pilotos.add(elemento)
             elif tipo == 'copiloto':
                 elemento = Copiloto.objects.get(id=id_elemento)
-                equipo.copilotos.add(elemento)
             elif tipo == 'coche':
                 elemento = Coche.objects.get(id=id_elemento)
-                equipo.coches.add(elemento)
             else:
                 return Response({'error': 'Tipo de elemento no válido'}, status=status.HTTP_400_BAD_REQUEST)
 
             if equipo.presupuesto < elemento.precio:
                 return Response({'error': 'No tienes suficiente presupuesto'}, status=status.HTTP_400_BAD_REQUEST)
 
+            # Agregar solo si tiene presupuesto
+            if tipo == 'piloto':
+                equipo.pilotos.add(elemento)
+            elif tipo == 'copiloto':
+                equipo.copilotos.add(elemento)
+            elif tipo == 'coche':
+                equipo.coches.add(elemento)
+
             equipo.presupuesto -= elemento.precio
             equipo.save()
+
 
             return Response({'mensaje': f'{tipo.capitalize()} comprado correctamente'})
         except FantasyTeam.DoesNotExist:
@@ -250,3 +259,38 @@ class HistoricoUsuarioView(APIView):
         } for equipo in equipos_rally]
 
         return Response(data)
+
+
+def clonar_equipo_para_rally(user, rally):
+    try:
+        equipo = FantasyTeam.objects.get(user=user)
+
+        # Solo copiar si la última modificación fue antes del inicio del rally
+        if equipo.ultima_modificacion.date() <= rally.fecha_inicio:
+            equipo_rally, created = FantasyTeamRally.objects.get_or_create(user=user, rally=rally)
+
+            # Solo clonar si se acaba de crear (no sobrescribir si ya existe)
+            if created:
+                equipo_rally.pilotos.set(equipo.pilotos.all())
+                equipo_rally.copilotos.set(equipo.copilotos.all())
+                equipo_rally.coches.set(equipo.coches.all())
+                equipo_rally.save()
+                print(f"[Scheduler] Equipo de {user.email} clonado para el rally '{rally.nombre}'")
+                print(f"  Pilotos: {[p.nombre for p in equipo_rally.pilotos.all()]}")
+                print(f"  Copilotos: {[c.nombre for c in equipo_rally.copilotos.all()]}")
+                print(f"  Coches: {[co.modelo for co in equipo_rally.coches.all()]}")
+            else:
+                print(f"[Scheduler] Equipo para {user.email} y rally '{rally.nombre}' ya existe, no se clonó")
+        else:
+            print(f"[Scheduler] Equipo para {user.email} modificado después del inicio del rally, no se clona")
+    except FantasyTeam.DoesNotExist:
+        print(f"[Scheduler] No existe equipo para el usuario {user.email}")
+
+
+
+hoy = date.today()
+rallies = Rally.objects.filter(fecha_inicio=hoy)
+
+for rally in rallies:
+    for user in User.objects.all():
+        clonar_equipo_para_rally(user, rally)

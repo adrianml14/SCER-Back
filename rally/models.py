@@ -136,8 +136,9 @@ class FantasyTeam(models.Model):
     pilotos = models.ManyToManyField(Piloto, blank=True)
     copilotos = models.ManyToManyField(Copiloto, blank=True)
     coches = models.ManyToManyField(Coche, blank=True)
-    presupuesto = models.DecimalField(max_digits=10, decimal_places=2, default=1000000.00)
+    presupuesto = models.DecimalField(max_digits=10, decimal_places=2, default=500000.00)
     puntos = models.IntegerField(default=0)
+    ultima_modificacion = models.DateTimeField(auto_now=True) 
 
     def __str__(self):
         return f"{self.nombre} ({self.user.username})"
