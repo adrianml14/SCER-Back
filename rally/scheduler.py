@@ -1,9 +1,12 @@
-# rally/scheduler.py
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import date, timedelta
 from users.models import User
 from .models import FantasyTeamRally, Rally
 from .views import clonar_equipo_para_rally
+from ligas.models import ParticipacionLiga
+from rally.models import FantasyTeamRally
+from django.db.models import Sum
 
 
 def start():
@@ -55,3 +58,20 @@ def actualizar_puntos_rallies_finalizados():
         for equipo in equipos:
             equipo.actualizar_puntos()
         print(f"[Scheduler] Puntos actualizados para rally: {rally.nombre}")
+
+    actualizar_puntos_de_ligas()
+    print("[Scheduler] Puntos de ligas actualizados.")
+
+
+def actualizar_puntos_de_ligas():
+    from ligas.models import Liga  # evitar import circular
+
+    for liga in Liga.objects.all():
+        for participacion in liga.participantes.all():
+            puntos = FantasyTeamRally.objects.filter(
+                user = participacion.usuario,
+                rally__fecha_inicio__gte=participacion.fecha_union
+            ).aggregate(Sum('puntos'))['puntos__sum'] or 0
+
+            participacion.puntos = puntos
+            participacion.save()
