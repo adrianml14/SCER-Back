@@ -3,6 +3,7 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Sum
 
 from users.models import User
 from .models import FantasyTeam, FantasyTeamRally, ParticipacionRally, Piloto, Copiloto, Coche, Rally
@@ -231,13 +232,25 @@ class ClasificacionPorRallyView(APIView):
         rallies = Rally.objects.all().order_by('-id')
 
         for rally in rallies:
-            participaciones = FantasyTeamRally.objects.filter(rally=rally).select_related('user').order_by('-puntos')
-            items = [{
-                'usuario': p.user.username,
-                'puntos': p.puntos,
-                'equipo_nombre': FantasyTeam.objects.get(user=p.user).nombre,
-                'rally': rally.nombre
-            } for p in participaciones]
+            # Filtramos usuarios que se registraron antes o el mismo día que empezó el rally
+            participaciones = FantasyTeamRally.objects.filter(
+                rally=rally,
+                user__fecha_registro__lte=rally.fecha_inicio
+            ).select_related('user').order_by('-puntos')
+
+            items = []
+            for p in participaciones:
+                try:
+                    equipo_nombre = FantasyTeam.objects.get(user=p.user).nombre
+                except FantasyTeam.DoesNotExist:
+                    equipo_nombre = "Equipo desconocido"
+
+                items.append({
+                    'usuario': p.user.username,
+                    'puntos': p.puntos,
+                    'equipo_nombre': equipo_nombre,
+                    'rally': rally.nombre
+                })
 
             data.append({
                 'rally': rally.nombre,
@@ -286,6 +299,34 @@ def clonar_equipo_para_rally(user, rally):
     except FantasyTeam.DoesNotExist:
         print(f"[Scheduler] No existe equipo para el usuario {user.email}")
 
+
+class ClasificacionGeneralView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        clasificacion = (
+            FantasyTeamRally.objects
+            .values('user__username')
+            .annotate(puntos_totales=Sum('puntos'))
+            .order_by('-puntos_totales')
+        )
+
+        data = []
+        for idx, item in enumerate(clasificacion, start=1):
+            try:
+                equipo = FantasyTeam.objects.get(user__username=item['user__username'])
+                nombre_equipo = equipo.nombre
+            except FantasyTeam.DoesNotExist:
+                nombre_equipo = "Equipo desconocido"
+
+            data.append({
+                'posicion': idx,
+                'usuario': item['user__username'],
+                'equipo_nombre': nombre_equipo,
+                'puntos_totales': item['puntos_totales']
+            })
+
+        return Response(data)
 
 
 hoy = date.today()

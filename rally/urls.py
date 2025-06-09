@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CambiarNombreEquipoView, ClasificacionPorRallyView, ComprarElementoView, HistoricoCocheView, HistoricoCopilotoView, HistoricoPilotoView, HistoricoUsuarioView, MisCochesView, MisCopilotosView, MisEquiposPorRallyView, MisPilotosView, ObtenerNombreEquipoView, ObtenerPresupuestoView, PilotoListView, CopilotoListView, CocheListView, VenderElementoView
+from .views import CambiarNombreEquipoView, ClasificacionGeneralView, ClasificacionPorRallyView, ComprarElementoView, HistoricoCocheView, HistoricoCopilotoView, HistoricoPilotoView, HistoricoUsuarioView, MisCochesView, MisCopilotosView, MisEquiposPorRallyView, MisPilotosView, ObtenerNombreEquipoView, ObtenerPresupuestoView, PilotoListView, CopilotoListView, CocheListView, VenderElementoView
 from rally import views
 
 urlpatterns = [
@@ -34,6 +34,8 @@ urlpatterns = [
 
     #historico de cada equipo y puntos que tuvo el usuario en un equipo
     path('historico-usuario/', HistoricoUsuarioView.as_view(), name='historico_usuario'),
+
+    path('clasificacion-general/', ClasificacionGeneralView.as_view(), name='clasificacion-general'),
 
 ]
 

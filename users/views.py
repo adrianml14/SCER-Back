@@ -38,7 +38,7 @@ def register(request):
         user = User.objects.create_user(username=username, email=email, password=password)
 
         # Crear equipo de fantasía con presupuesto inicial
-        FantasyTeam.objects.create(user=user, presupuesto=1000000.00)
+        FantasyTeam.objects.create(user=user, presupuesto=500000.00)
 
         return JsonResponse({"message": "Registro exitoso"}, status=201)
 
