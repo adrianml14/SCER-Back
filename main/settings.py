@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'main',
-    'rally',
+    'rally.apps.RallyConfig',
     'rest_framework.authtoken',
     'ligas',
     'bug_reports',

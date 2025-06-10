@@ -90,17 +90,23 @@ class ComprarElementoView(APIView):
 
             if tipo == 'piloto':
                 elemento = Piloto.objects.get(id=id_elemento)
+                if equipo.pilotos.count() >= 2:
+                    return Response({'error': 'No puedes tener más de 2 pilotos.'}, status=status.HTTP_400_BAD_REQUEST)
             elif tipo == 'copiloto':
                 elemento = Copiloto.objects.get(id=id_elemento)
+                if equipo.copilotos.count() >= 2:
+                    return Response({'error': 'No puedes tener más de 2 copilotos.'}, status=status.HTTP_400_BAD_REQUEST)
             elif tipo == 'coche':
                 elemento = Coche.objects.get(id=id_elemento)
+                if equipo.coches.count() >= 1:
+                    return Response({'error': 'Solo puedes tener 1 coche en tu equipo.'}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({'error': 'Tipo de elemento no válido'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Tipo de elemento no válido.'}, status=status.HTTP_400_BAD_REQUEST)
 
             if equipo.presupuesto < elemento.precio:
-                return Response({'error': 'No tienes suficiente presupuesto'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'No tienes suficiente presupuesto.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Agregar solo si tiene presupuesto
+            # Agregar elemento y descontar presupuesto
             if tipo == 'piloto':
                 equipo.pilotos.add(elemento)
             elif tipo == 'copiloto':
@@ -111,12 +117,12 @@ class ComprarElementoView(APIView):
             equipo.presupuesto -= elemento.precio
             equipo.save()
 
-
             return Response({'mensaje': f'{tipo.capitalize()} comprado correctamente'})
         except FantasyTeam.DoesNotExist:
             return Response({'error': 'Equipo no encontrado'}, status=status.HTTP_404_NOT_FOUND)
         except (Piloto.DoesNotExist, Copiloto.DoesNotExist, Coche.DoesNotExist):
             return Response({'error': f'{tipo.capitalize()} no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 class VenderElementoView(APIView):

@@ -1,18 +1,23 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from rest_framework.exceptions import ValidationError
 
 from rally.models import FantasyTeam
 from .models import Liga, ParticipacionLiga
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, permissions
-from .models import Liga, ParticipacionLiga
+from rest_framework import generics
 from .serializer import ClasificacionGeneralSerializer, LigaSerializer, ParticipacionLigaSerializer
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework import status
+from rest_framework.decorators import api_view
 from django.db.models import Sum
+
+User = get_user_model()
+
+# Función ejemplo para detectar VIP (modifícala según tu modelo)
+def es_vip(user):
+    return user.roles.filter(nombre="VIP").exists()
+
 
 
 class LigaListCreateView(generics.ListCreateAPIView):
@@ -21,9 +26,14 @@ class LigaListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        liga = serializer.save(dueño=self.request.user)
-        # Añadir al dueño como participante automáticamente
-        ParticipacionLiga.objects.create(usuario=self.request.user, liga=liga)
+        user = self.request.user
+
+        # ✅ Verifica si es VIP y ya tiene una liga
+        if es_vip(user) and Liga.objects.filter(dueño=user).exists():
+            raise ValidationError("Los usuarios VIP solo pueden crear una liga.")
+
+        liga = serializer.save(dueño=user)
+        ParticipacionLiga.objects.create(usuario=user, liga=liga)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -35,7 +45,14 @@ class ParticipacionLigaCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(usuario=self.request.user)
+        user = self.request.user
+
+        # Limitar unión: usuario solo puede estar en una liga
+        if ParticipacionLiga.objects.filter(usuario=user).exists():
+            raise ValidationError("Solo puedes unirte a una liga.")
+
+        serializer.save(usuario=user)
+
 
 class MisLigasView(generics.ListAPIView):
     serializer_class = ParticipacionLigaSerializer
@@ -43,22 +60,17 @@ class MisLigasView(generics.ListAPIView):
 
     def get_queryset(self):
         return ParticipacionLiga.objects.filter(usuario=self.request.user)
-    
+
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['request'] = self.request  # 👈 necesario para saber quién hace la petición
+        context['request'] = self.request
         return context
-
-
-
-User = get_user_model()
 
 
 class GestionParticipantesView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, liga_id):
-        """Listar todos los participantes de una liga"""
         liga = get_object_or_404(Liga, id=liga_id)
         if not ParticipacionLiga.objects.filter(liga=liga).exists():
             return Response({'mensaje': 'No hay participantes en esta liga.'}, status=200)
@@ -68,7 +80,6 @@ class GestionParticipantesView(APIView):
         return Response(serializer.data, status=200)
 
     def post(self, request, liga_id):
-        """Añadir usuario a una liga (solo dueño)"""
         liga = get_object_or_404(Liga, id=liga_id)
 
         if liga.dueño != request.user:
@@ -77,6 +88,10 @@ class GestionParticipantesView(APIView):
         username = request.data.get('username')
         usuario = get_object_or_404(User, username=username)
 
+        # Verificar si usuario ya está en otra liga
+        if ParticipacionLiga.objects.filter(usuario=usuario).exists():
+            return Response({'error': 'El usuario ya pertenece a otra liga.'}, status=400)
+
         participacion, created = ParticipacionLiga.objects.get_or_create(usuario=usuario, liga=liga)
         if not created:
             return Response({'message': 'El usuario ya participa en la liga.'}, status=200)
@@ -84,7 +99,6 @@ class GestionParticipantesView(APIView):
         return Response({'message': 'Usuario añadido correctamente.'}, status=201)
 
     def delete(self, request, liga_id):
-        """Eliminar usuario de una liga (solo dueño)"""
         liga = get_object_or_404(Liga, id=liga_id)
 
         if liga.dueño != request.user:
@@ -99,7 +113,7 @@ class GestionParticipantesView(APIView):
 
         participacion.delete()
         return Response({'message': 'Usuario eliminado correctamente.'}, status=200)
-    
+
 
 @api_view(['POST'])
 def unirse_por_codigo(request):
@@ -110,13 +124,19 @@ def unirse_por_codigo(request):
     try:
         liga = Liga.objects.get(codigo_unico=codigo)
     except Liga.DoesNotExist:
-        return Response({'error': 'Codigo Incorrecto'}, status=404)
+        return Response({'error': 'Código incorrecto'}, status=404)
 
-    # Evitar duplicados
-    if ParticipacionLiga.objects.filter(usuario=request.user, liga=liga).exists():
+    user = request.user
+
+    # Verificar que el usuario no esté ya en una liga
+    if ParticipacionLiga.objects.filter(usuario=user).exists():
+        return Response({'error': 'Solo puedes unirte a una liga.'}, status=400)
+
+    # Evitar duplicados (por si acaso)
+    if ParticipacionLiga.objects.filter(usuario=user, liga=liga).exists():
         return Response({'mensaje': 'Ya estás en esta liga'}, status=200)
 
-    ParticipacionLiga.objects.create(usuario=request.user, liga=liga)
+    ParticipacionLiga.objects.create(usuario=user, liga=liga)
     return Response({'mensaje': f'Te has unido a la liga "{liga.nombre}".'}, status=201)
 
 
@@ -146,7 +166,8 @@ class ClasificacionGeneralView(APIView):
 
         serializer = ClasificacionGeneralSerializer(clasificacion_formateada, many=True)
         return Response(serializer.data)
-    
+
+
 class SalirDeLigaView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 

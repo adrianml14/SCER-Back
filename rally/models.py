@@ -1,8 +1,10 @@
 from decimal import Decimal
 from django.db import models
+from django.forms import ValidationError
 from users.models import User
 
 MIN_PRECIO = Decimal('100000.00')  # valor mínimo fijo para precio
+MIN_PRECIO_COCHE = Decimal('75000.00')  # mínimo precio para coches
 
 
 class Piloto(models.Model):
@@ -21,7 +23,7 @@ class Piloto(models.Model):
 
     def ajustar_precio_por_rendimiento(self, puntos):
         if puntos > 0:
-            incremento = (Decimal(puntos) / Decimal(10)) * Decimal('0.02') * self.precio
+            incremento = (Decimal(puntos) / Decimal(10)) * Decimal('0.04') * self.precio
             self.precio += incremento
         else:
             nuevo_precio = self.precio * Decimal('0.95')
@@ -59,7 +61,6 @@ class Copiloto(models.Model):
         self.save(update_fields=["precio"])
 
 
-
 class Coche(models.Model):
     modelo = models.CharField(max_length=255)
     imagen = models.URLField(blank=True)
@@ -73,6 +74,21 @@ class Coche(models.Model):
         total = sum(p.puntos for p in self.participacionrally_set.all())
         self.puntos_totales = total
         self.save(update_fields=['puntos_totales'])
+
+    def ajustar_precio_por_rendimiento(self, puntos):
+        if puntos > 0:
+            incremento = (Decimal(puntos) / Decimal(10)) * Decimal('0.04') * self.precio  
+            self.precio += incremento
+        else:
+            nuevo_precio = self.precio * Decimal('0.95')
+            self.precio = max(nuevo_precio, MIN_PRECIO_COCHE)
+
+        # Forzar precio mínimo
+        if self.precio < MIN_PRECIO_COCHE:
+            self.precio = MIN_PRECIO_COCHE
+
+        self.save(update_fields=["precio"])
+
 
 
 class Rally(models.Model):
@@ -113,11 +129,9 @@ class ParticipacionRally(models.Model):
         return tabla_puntos.get(self.posicion, 0)
 
     def save(self, *args, **kwargs):
-        # Asigna automáticamente los puntos según la posición
         self.puntos = self.calcular_puntos_por_posicion()
         super().save(*args, **kwargs)
 
-        # Actualiza los puntos totales acumulados de cada participante
         if self.piloto:
             self.piloto.actualizar_puntos_totales()
             self.piloto.ajustar_precio_por_rendimiento(self.puntos)
@@ -128,6 +142,8 @@ class ParticipacionRally(models.Model):
 
         if self.coche:
             self.coche.actualizar_puntos_totales()
+            self.coche.ajustar_precio_por_rendimiento(self.puntos)
+
 
 
 class FantasyTeam(models.Model):
@@ -138,10 +154,23 @@ class FantasyTeam(models.Model):
     coches = models.ManyToManyField(Coche, blank=True)
     presupuesto = models.DecimalField(max_digits=10, decimal_places=2, default=500000.00)
     puntos = models.IntegerField(default=0)
-    ultima_modificacion = models.DateTimeField(auto_now=True) 
+    ultima_modificacion = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.nombre} ({self.user.username})"
+
+    def clean(self):
+        if self.pk:  # Solo se valida si ya existe (porque M2M no está disponible antes de guardar)
+            if self.pilotos.count() > 2:
+                raise ValidationError("No puedes tener más de 2 pilotos en tu equipo.")
+            if self.copilotos.count() > 2:
+                raise ValidationError("No puedes tener más de 2 copilotos en tu equipo.")
+            if self.coches.count() > 1:
+                raise ValidationError("Solo puedes tener un coche en tu equipo.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Ejecuta clean() antes de guardar
+        super().save(*args, **kwargs)
 
 
 class FantasyTeamRally(models.Model):
