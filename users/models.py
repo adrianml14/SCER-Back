@@ -46,7 +46,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(max_length=255, unique=True)
     fecha_registro = models.DateTimeField(default=timezone.now)
-    is_active = models.BooleanField(default=True)
     last_login = models.DateTimeField(auto_now=True, blank=True, null=True)
 
     bandera = models.ForeignKey(
