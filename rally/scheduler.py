@@ -21,28 +21,64 @@ def start():
         logger.warning("⚠️ Jobs ya registrados anteriormente")
 
 def registrar_jobs():
-    from .scheduler import clonar_equipos_del_dia, actualizar_puntos_rallies_finalizados
+    from .scheduler import programar_scrappers_y_jobs_por_rally
+    programar_scrappers_y_jobs_por_rally()
+    logger.info("✅ Jobs programados por rally correctamente")
 
-    scheduler.add_job(
-        clonar_equipos_del_dia,
-        'cron',
-        hour=3,
-        minute=11,
-        id='clonacion_equipos_diaria',
-        replace_existing=True
-    )
+def programar_scrappers_y_jobs_por_rally():
+    from rally.models import Rally
+    from django.core.management import call_command
+    from datetime import datetime, timedelta
 
-    scheduler.add_job(
-        actualizar_puntos_rallies_finalizados,
-        'cron',
-        hour=3,
-        minute=23,
-        id='actualizar_puntos_rallies',
-        replace_existing=True
-    )
+    rallies = Rally.objects.filter(fecha_inicio__isnull=False)
 
-    logger.info("✅ Jobs registrados correctamente en el scheduler")
+    for rally in rallies:
+        nombre = rally.nombre
+        fecha_inicio = rally.fecha_inicio
 
+        # 1. Clonar equipos el mismo día del rally a las 03:00
+        fecha_clonacion = datetime.combine(fecha_inicio, datetime.min.time()) + timedelta(hours=3)
+        scheduler.add_job(
+            clonar_equipos_del_dia,
+            'date',
+            run_date=fecha_clonacion,
+            id=f'clonar_equipos_{rally.id}',
+            replace_existing=True
+        )
+        logger.info(f"🗓️ Clonación de equipos programada para rally '{nombre}' el {fecha_clonacion}")
+
+        # 2. Scraping de inscritos 1 día antes a las 04:00
+        fecha_inscritos = datetime.combine(fecha_inicio - timedelta(days=1), datetime.min.time()) + timedelta(hours=4)
+        scheduler.add_job(
+            lambda: call_command('webscrappingINSCRITOS'),
+            'date',
+            run_date=fecha_inscritos,
+            id=f'webscrapping_inscritos_{rally.id}',
+            replace_existing=True
+        )
+        logger.info(f"🗓️ webscrappingINSCRITOS programado para rally '{nombre}' el {fecha_inscritos}")
+
+        # 3. Scraping de resultados 3 días después a las 05:00
+        fecha_resultados = datetime.combine(fecha_inicio + timedelta(days=3), datetime.min.time()) + timedelta(hours=5)
+        scheduler.add_job(
+            lambda: call_command('webscrappingRESULTADOS'),
+            'date',
+            run_date=fecha_resultados,
+            id=f'webscrapping_resultados_{rally.id}',
+            replace_existing=True
+        )
+        logger.info(f"🗓️ webscrappingRESULTADOS programado para rally '{nombre}' el {fecha_resultados}")
+
+        # 4. Actualizar puntos justo después (05:10)
+        fecha_puntos = fecha_resultados + timedelta(minutes=10)
+        scheduler.add_job(
+            actualizar_puntos_rally_y_ligas,
+            'date',
+            run_date=fecha_puntos,
+            id=f'actualizar_puntos_{rally.id}',
+            replace_existing=True
+        )
+        logger.info(f"🗓️ Actualización de puntos programada para rally '{nombre}' el {fecha_puntos}")
 
 def clonar_equipos_del_dia():
     from datetime import date
@@ -50,7 +86,7 @@ def clonar_equipos_del_dia():
     from .models import Rally
     from .views import clonar_equipo_para_rally
 
-    hoy = date(2025, 3, 21)  # ⚠️ cambiar por date.today() en producción
+    hoy = date.today()
     logger.info(f"[Scheduler] Ejecutando clonación para: {hoy}")
     rallies = Rally.objects.filter(fecha_inicio=hoy)
     logger.info(f"[Scheduler] Rallies encontrados: {rallies.count()}")
@@ -62,10 +98,11 @@ def clonar_equipos_del_dia():
             except Exception as e:
                 logger.error(f"[Scheduler] Error clonando para {user}: {e}")
 
-
-def actualizar_puntos_rallies_finalizados():
+def actualizar_puntos_rally_y_ligas():
     from datetime import date, timedelta
     from .models import Rally, FantasyTeamRally
+    from ligas.models import Liga
+    from django.db.models import Sum
 
     hoy = date.today()
     fecha_limite = hoy - timedelta(days=3)
@@ -77,15 +114,7 @@ def actualizar_puntos_rallies_finalizados():
             equipo.actualizar_puntos()
         logger.info(f"[Scheduler] Puntos actualizados para rally: {rally.nombre}")
 
-    actualizar_puntos_de_ligas()
-    logger.info("[Scheduler] Puntos de ligas actualizados")
-
-
-def actualizar_puntos_de_ligas():
-    from ligas.models import Liga
-    from rally.models import FantasyTeamRally
-    from django.db.models import Sum
-
+    logger.info("[Scheduler] Actualizando puntos de ligas")
     for liga in Liga.objects.all():
         for participacion in liga.participantes.all():
             puntos = FantasyTeamRally.objects.filter(

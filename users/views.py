@@ -8,8 +8,6 @@ from rest_framework.authtoken.models import Token
 from django.core.exceptions import ValidationError
 from rally.models import FantasyTeam
 from users.models import User, UsuarioRol, Rol
-from users.models import Bandera
-from users.serializer import BanderaSerializer
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -86,12 +84,6 @@ class CurrentUserView(APIView):
             "email": request.user.email,
             "rol": rol.nombre if rol else None
         })
-
-    
-class BanderaListView(ListAPIView):
-    queryset = Bandera.objects.all()
-    serializer_class = BanderaSerializer
-
 
 class ToggleVIPView(APIView):
     permission_classes = [IsAuthenticated]

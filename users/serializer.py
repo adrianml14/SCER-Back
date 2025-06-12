@@ -1,23 +1,15 @@
 from rest_framework import serializers
-from .models import User, Bandera
+from .models import User
 
-class BanderaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Bandera
-        fields = ['id', 'nombre', 'imagen_url']
+
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    bandera = BanderaSerializer(read_only=True)
-    bandera_id = serializers.PrimaryKeyRelatedField(
-        queryset=Bandera.objects.all(), write_only=True, source='bandera', required=False
-    )
-
     rol = serializers.CharField(source='rol_nombre', read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'bandera', 'bandera_id', 'rol')
+        fields = ('id', 'username', 'email', 'password', 'rol')
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():

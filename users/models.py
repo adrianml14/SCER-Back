@@ -35,7 +35,6 @@ class UserManager(BaseUserManager):
             rol_usuario = Rol.objects.get(nombre="Usuario")  # o id=1
             UsuarioRol.objects.create(usuario=user, rol=rol_usuario)
         except Rol.DoesNotExist:
-            # Opcional: puedes registrar un warning aquí
             pass
 
         return user
@@ -48,13 +47,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     fecha_registro = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(auto_now=True, blank=True, null=True)
 
-    bandera = models.ForeignKey(
-        'Bandera',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='usuarios'
-    )
 
     # Relación muchos a muchos con roles a través de la tabla intermedia
     roles = models.ManyToManyField(
@@ -87,11 +79,4 @@ class User(AbstractBaseUser, PermissionsMixin):
         rol = self.roles.first()
         return rol.nombre if rol else None
 
-# Modelo bandera
-class Bandera(models.Model):
-    nombre = models.CharField(max_length=100, unique=True)
-    imagen_url = models.URLField()
-
-    def __str__(self):
-        return self.nombre
 
