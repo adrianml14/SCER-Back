@@ -48,7 +48,7 @@ def programar_scrappers_y_jobs_por_rally():
         logger.info(f"🗓️ Clonación de equipos programada para rally '{nombre}' el {fecha_clonacion}")
 
         # 2. Scraping de inscritos 1 día antes a las 04:00
-        fecha_inscritos = datetime.combine(fecha_inicio - timedelta(days=1), datetime.min.time()) + timedelta(hours=4)
+        fecha_inscritos = datetime.combine(fecha_inicio - timedelta(days=1), datetime.min.time()) + timedelta(hours=9, minutes=58)
         scheduler.add_job(
             lambda: call_command('webscrappingINSCRITOS'),
             'date',
@@ -122,5 +122,5 @@ def actualizar_puntos_rally_y_ligas():
                 rally__fecha_inicio__gte=participacion.fecha_union
             ).aggregate(Sum('puntos'))['puntos__sum'] or 0
 
-            participacion.puntos = puntos
+            participacion.puntos = int(puntos)
             participacion.save()

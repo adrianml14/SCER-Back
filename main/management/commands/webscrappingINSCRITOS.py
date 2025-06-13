@@ -1,3 +1,4 @@
+from decimal import Decimal
 import json
 import re
 from django.core.management.base import BaseCommand
@@ -139,17 +140,17 @@ class Command(BaseCommand):
                     for entry in results_data:
                         piloto, _ = Piloto.objects.get_or_create(
                             nombre=entry["driver"],
-                            defaults={"bandera": entry["driver_flag"], "precio": 100000.00}
+                            defaults={"bandera": entry["driver_flag"], "precio": Decimal("100000.00")}
                         )
 
                         copiloto, _ = Copiloto.objects.get_or_create(
                             nombre=entry["copilot"],
-                            defaults={"bandera": entry["co_driver_flag"], "precio": 75000.00}
+                            defaults={"bandera": entry["co_driver_flag"], "precio": Decimal("100000.00")}
                         )
 
                         coche, _ = Coche.objects.get_or_create(
                             modelo=entry["car_info"],
-                            defaults={"imagen": entry["car_icon"], "precio": 150000.00}
+                            defaults={"imagen": entry["car_icon"], "precio":Decimal("75000.00")}
                         )
 
                         # Participación en el rally
