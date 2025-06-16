@@ -47,8 +47,8 @@ def programar_scrappers_y_jobs_por_rally():
         )
         logger.info(f"🗓️ Clonación de equipos programada para rally '{nombre}' el {fecha_clonacion}")
 
-        # 2. Scraping de inscritos 1 día antes a las 04:00
-        fecha_inscritos = datetime.combine(fecha_inicio - timedelta(days=1), datetime.min.time()) + timedelta(hours=9, minutes=58)
+        # 2. Scraping de inscritos 2 día antes
+        fecha_inscritos = datetime.combine(fecha_inicio - timedelta(days=2), datetime.min.time()) + timedelta(hours=9, minutes=58)
         scheduler.add_job(
             lambda: call_command('webscrappingINSCRITOS'),
             'date',
@@ -58,8 +58,8 @@ def programar_scrappers_y_jobs_por_rally():
         )
         logger.info(f"🗓️ webscrappingINSCRITOS programado para rally '{nombre}' el {fecha_inscritos}")
 
-        # 3. Scraping de resultados 3 días después a las 05:00
-        fecha_resultados = datetime.combine(fecha_inicio + timedelta(days=3), datetime.min.time()) + timedelta(hours=5)
+        # 3. Scraping de resultados 3 días después del inicio del rally
+        fecha_resultados = datetime.combine(fecha_inicio + timedelta(days=2), datetime.min.time()) + timedelta(hours=9, minutes=12)
         scheduler.add_job(
             lambda: call_command('webscrappingRESULTADOS'),
             'date',
@@ -70,7 +70,7 @@ def programar_scrappers_y_jobs_por_rally():
         logger.info(f"🗓️ webscrappingRESULTADOS programado para rally '{nombre}' el {fecha_resultados}")
 
         # 4. Actualizar puntos justo después (05:10)
-        fecha_puntos = fecha_resultados + timedelta(minutes=10)
+        fecha_puntos = fecha_resultados + timedelta(minutes=1)
         scheduler.add_job(
             actualizar_puntos_rally_y_ligas,
             'date',

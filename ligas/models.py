@@ -23,7 +23,8 @@ class Liga(models.Model):
             codigo = ''.join(random.choices(string.digits, k=5))
             if not Liga.objects.filter(codigo_unico=codigo).exists():
                 return codigo
-
+            
+# tabla participación liga, que relaciona el usuario con la liga
 class ParticipacionLiga(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     liga = models.ForeignKey(Liga, on_delete=models.CASCADE, related_name='participantes')
