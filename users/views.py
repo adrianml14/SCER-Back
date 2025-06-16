@@ -13,8 +13,6 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-
-
 @require_POST
 @csrf_exempt
 def register(request):
@@ -35,7 +33,7 @@ def register(request):
 
         user = User.objects.create_user(username=username, email=email, password=password)
 
-        # Crear equipo de fantasía con presupuesto inicial
+        # Crear equipo fantasy con presupuesto inicial
         FantasyTeam.objects.create(user=user, presupuesto=500000.00)
 
         return JsonResponse({"message": "Registro exitoso"}, status=201)
@@ -85,6 +83,7 @@ class CurrentUserView(APIView):
             "rol": rol.nombre if rol else None
         })
 
+# cambiar roles usuario - VIP
 class ToggleVIPView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -111,6 +110,7 @@ class ToggleVIPView(APIView):
             "nuevo_rol": nuevo_rol
         })
     
+# cambiar roles Usuario - Administrador
 class ToggleAdminView(APIView):
     permission_classes = [IsAuthenticated]
 

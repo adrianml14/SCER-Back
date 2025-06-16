@@ -99,7 +99,7 @@ class Rally(models.Model):
     def __str__(self):
         return self.nombre
 
-
+# Modelo que representa la participación de un piloto, copiloto y coche en un rally
 class ParticipacionRally(models.Model):
     rally = models.ForeignKey(Rally, on_delete=models.CASCADE)
     piloto = models.ForeignKey(Piloto, on_delete=models.SET_NULL, null=True, blank=True)
@@ -145,7 +145,7 @@ class ParticipacionRally(models.Model):
             self.coche.ajustar_precio_por_rendimiento(self.puntos)
 
 
-
+# Modelo para equipo fantasy vinculado a un usuario
 class FantasyTeam(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=255, default="Mi equipo")
@@ -172,7 +172,7 @@ class FantasyTeam(models.Model):
         self.full_clean()  # Ejecuta clean() antes de guardar
         super().save(*args, **kwargs)
 
-
+# Modelo para la participación de un equipo fantasy en un rally específico
 class FantasyTeamRally(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     rally = models.ForeignKey(Rally, on_delete=models.CASCADE)

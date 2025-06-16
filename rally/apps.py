@@ -8,7 +8,7 @@ class RallyConfig(AppConfig):
     name = 'rally'
 
     def ready(self):
-        # Importa e inicia el scheduler aquí
+        # Importe del scheduler
         if os.environ.get('RUN_MAIN') == 'true':
             from rally import scheduler
             scheduler.start()

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import FantasyTeamRally, Piloto, Copiloto, Coche, ParticipacionRally
 
+# serializers de pilotos, copilotos y coches
 class PilotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Piloto
@@ -16,6 +17,7 @@ class CocheSerializer(serializers.ModelSerializer):
         model = Coche
         fields = ('id', 'modelo', 'imagen', 'precio', 'puntos_totales')
 
+# representa un equipo fantasy para un rally específico
 class FantasyTeamRallySerializer(serializers.ModelSerializer):
     pilotos = PilotoSerializer(many=True, read_only=True)
     copilotos = CopilotoSerializer(many=True, read_only=True)
@@ -36,10 +38,11 @@ class FantasyTeamRallySerializer(serializers.ModelSerializer):
             'piloto_ids', 'copiloto_ids', 'coche_ids',
         )
 
+# serializers de la pariticpación de pilotos, copilotos y coches
 class ParticipacionPilotoSerializer(serializers.ModelSerializer):
     piloto = PilotoSerializer(read_only=True)
     rally_nombre = serializers.CharField(source='rally.nombre', read_only=True)
-    equipo = serializers.CharField(read_only=True)  # Aquí
+    equipo = serializers.CharField(read_only=True) 
 
     class Meta:
         model = ParticipacionRally

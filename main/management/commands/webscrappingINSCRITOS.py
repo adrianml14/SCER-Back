@@ -13,26 +13,21 @@ class Command(BaseCommand):
     help = 'Scrapea los resultados de eWRC y los guarda en la base de datos'
 
     def handle(self, *args, **kwargs):
-        # Inicializar el driver
+        # Inicializa el navegador Chrome
         driver = webdriver.Chrome()
 
-        # URLs de las páginas que deseas recorrer
+        # Lista de URLs a scrapear (cada una representa una prueba de rally)
         page_urls = [
+            # Ejemplo de rallies de la temporada 2025
             "https://www.ewrc-results.com/entries/92248-rallye-tierras-altas-de-lorca-2025/?sct=1512",
-            "https://www.ewrc-results.com/entries/91078-rally-sierra-morena-cordoba-patrimonio-de-la-humanidad-2025/?sct=1512",
-            "https://www.ewrc-results.com/entries/92250-rally-de-ourense-recalvi-2025/?sct=1512",
-            "https://www.ewrc-results.com/entries/92251-rally-recalvi-rias-baixas-2025/?sct=1512",
-            "https://www.ewrc-results.com/entries/92253-rally-blendio-princesa-de-asturias-ciudad-de-oviedo-2025/?sct=1512",
-            "https://www.ewrc-results.com/entries/92275-rally-villa-de-llanes-2025/?sct=1512",
-            "https://www.ewrc-results.com/entries/92277-rallyracc-catalunya-costa-daurada-2025/?sct=1512",
-            "https://www.ewrc-results.com/entries/92278-rally-de-la-nucia-mediterraneo-costa-blanca-2025/?sct=1512",
+            # ...
         ]
 
-        # Función para formatear el nombre correctamente
+        # Función auxiliar para formatear correctamente nombres (por ejemplo: José Luis Pérez)
         def format_name(full_name):
             parts = full_name.split()
 
-            # Eliminar "jnr", "jr", "jr." si están al final
+            # Elimina sufijos como 'jr', 'jnr', etc.
             if parts[-1].lower().rstrip(".") in ["jnr", "jr"]:
                 parts = parts[:-1]
 
@@ -43,7 +38,7 @@ class Command(BaseCommand):
                 "José Antonio", "María del Mar", "José María"
             ]
 
-            # Detectar nombre compuesto de las dos últimas palabras
+            # Verifica si las dos últimas palabras forman un nombre compuesto
             if len(parts) >= 2:
                 last_two = f"{parts[-2]} {parts[-1]}"
                 if last_two in composed_names:
@@ -51,16 +46,18 @@ class Command(BaseCommand):
                     last_names = " ".join(parts[:-2])
                     return f"{first_name} {last_names}" if last_names else first_name
 
-            # Lógica general por defecto
+            # Si no es compuesto, separa nombre y apellidos
             first_name = parts[-1]
             last_names = " ".join(parts[:-1])
             return f"{first_name} {last_names}" if last_names else first_name
 
-        # Función para extraer los datos
+        # Función que extrae datos de la página actual del navegador
         def extract_data_from_page():
+            # Espera hasta que la tabla de resultados esté presente
             WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.results")))
 
             try:
+                # Obtiene el nombre del rally
                 rally_name = driver.find_element(By.CSS_SELECTOR, "h3.text-center.pt-2.pb-0").text.strip()
             except Exception as e:
                 print(f"Error al obtener el nombre del rally: {e}")
@@ -69,35 +66,45 @@ class Command(BaseCommand):
             results_data = []
 
             try:
+                # Encuentra todas las filas de resultados
                 rows = driver.find_elements(By.CSS_SELECTOR, "table.results tbody tr")
                 if not rows:
                     print(f"No se encontraron filas de resultados en la página: {rally_name}.")
                     return rally_name, results_data
 
-                for i in range(len(rows)):  # Recorrer todas las filas
+                # Recorre cada fila de resultados
+                for i in range(len(rows)):
                     try:
+                        # Obtiene el número dorsal
                         dorsal = rows[i].find_element(By.CSS_SELECTOR, "td.text-left.font-weight-bold.text-primary").text.strip()
 
+                        # Sección donde están piloto y copiloto
                         startlist_entry = rows[i].find_element(By.CSS_SELECTOR, "td.startlist-entry")
                         driver_name_elem = startlist_entry.find_element(By.CSS_SELECTOR, "div.startlist-driver a")
                         driver_name = format_name(driver_name_elem.text.strip())
 
+                        # Copiloto (puede que no exista)
                         co_driver_name_elem = startlist_entry.find_elements(By.CSS_SELECTOR, "div.startlist-driver a")[1] if len(startlist_entry.find_elements(By.CSS_SELECTOR, "div.startlist-driver a")) > 1 else None
                         co_driver_name = format_name(co_driver_name_elem.text.strip()) if co_driver_name_elem else ""
 
+                        # Banderas (icono del país)
                         driver_flag = startlist_entry.find_element(By.CSS_SELECTOR, "div.startlist-driver img").get_attribute("src")
                         co_driver_flag = startlist_entry.find_elements(By.CSS_SELECTOR, "div.startlist-driver img")[1].get_attribute("src") if len(startlist_entry.find_elements(By.CSS_SELECTOR, "div.startlist-driver img")) > 1 else ""
 
+                        # Icono del coche y nombre del modelo
                         car_icon = rows[i].find_element(By.CSS_SELECTOR, "td.startlist-icon img").get_attribute("src")
                         car_info = rows[i].find_element(By.CSS_SELECTOR, "td.font-weight-bold.lh-130").text.strip().split("\n")[0]
 
+                        # Solo guardar coches de ciertas categorías (filtrado)
                         if any(keyword in car_info for keyword in ["Rally2", "R5", "Rally4", "N5", "RZ", "Rally3"]):
                             try:
+                                # Nombre del equipo (si está presente)
                                 team_name_elem = rows[i].find_element(By.CSS_SELECTOR, "td.font-weight-bold.lh-130 span")
                                 team_name = team_name_elem.text.strip()
                             except Exception:
                                 team_name = "Sin equipo"
 
+                            # Guarda los datos en la lista de resultados
                             results_data.append({
                                 "dorsal": dorsal,
                                 "driver": driver_name,
@@ -117,43 +124,47 @@ class Command(BaseCommand):
 
             return rally_name, results_data
 
-        # Recorrer todos los enlaces
+        # Procesar cada URL de rally
         for url in page_urls:
             try:
-                driver.get(url)
-                rally_name, results_data = extract_data_from_page()
+                driver.get(url)  # Navegar a la URL
+                rally_name, results_data = extract_data_from_page()  # Extraer los datos
 
                 if not rally_name:
                     self.stdout.write(self.style.WARNING(f"No se pudo obtener el nombre del rally en la página: {url}"))
                     continue
 
                 if results_data:
-                    # Intentamos obtener el rally EXISTENTE por nombre, no creamos ni modificamos nada
+                    # Buscar el rally existente en la base de datos
                     try:
                         rally_obj = Rally.objects.get(nombre=rally_name)
                     except Rally.DoesNotExist:
                         self.stdout.write(self.style.WARNING(
                             f"El rally '{rally_name}' no está en la base de datos. Se omite esta página."
                         ))
-                        continue  # Saltar esta URL si no existe el rally
+                        continue  # Saltar si no existe
 
+                    # Registrar los datos extraídos en la base de datos
                     for entry in results_data:
+                        # Obtener o crear el piloto
                         piloto, _ = Piloto.objects.get_or_create(
                             nombre=entry["driver"],
                             defaults={"bandera": entry["driver_flag"], "precio": Decimal("100000.00")}
                         )
 
+                        # Obtener o crear el copiloto
                         copiloto, _ = Copiloto.objects.get_or_create(
                             nombre=entry["copilot"],
                             defaults={"bandera": entry["co_driver_flag"], "precio": Decimal("100000.00")}
                         )
 
+                        # Obtener o crear el coche
                         coche, _ = Coche.objects.get_or_create(
                             modelo=entry["car_info"],
                             defaults={"imagen": entry["car_icon"], "precio":Decimal("75000.00")}
                         )
 
-                        # Participación en el rally
+                        # Registrar la participación en el rally
                         ParticipacionRally.objects.get_or_create(
                             rally=rally_obj,
                             piloto=piloto,
@@ -166,11 +177,11 @@ class Command(BaseCommand):
                 else:
                     self.stdout.write(self.style.WARNING(f"No se encontraron resultados en la página: {url}. Deteniendo el proceso."))
                     driver.quit()
-                    break  # Detenemos el proceso si no hay datos en alguna página.
+                    break  # Se detiene si una página no tiene datos válidos
 
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"Error al procesar la página {url}. Detalles del error: {e}"))
                 continue
 
-        # Cerrar el driver después de procesar todos los resultados
+        # Cierra el navegador al final
         driver.quit()

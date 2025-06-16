@@ -124,7 +124,8 @@ class ComprarElementoView(APIView):
             return Response({'error': f'{tipo.capitalize()} no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
 
-
+# Permite al usuario comprar un elemento (piloto, copiloto o coche). 
+# Valida el presupuesto y las restricciones (máximo 2 pilotos/copilotos, 1 coche).
 class VenderElementoView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -191,7 +192,7 @@ class MisEquiposPorRallyView(generics.ListAPIView):
     def get_queryset(self):
         return FantasyTeamRally.objects.filter(user=self.request.user).order_by('-rally__id')
 
-
+# Permite actualizar la configuración del equipo fantasy para un rally específico
 class ActualizarEquipoRallyView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = FantasyTeamRallySerializer

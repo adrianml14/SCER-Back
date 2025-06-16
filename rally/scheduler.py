@@ -36,7 +36,7 @@ def programar_scrappers_y_jobs_por_rally():
         nombre = rally.nombre
         fecha_inicio = rally.fecha_inicio
 
-        # 1. Clonar equipos el mismo día del rally a las 03:00
+        # 1. Clonar equipos el mismo día del rally 
         fecha_clonacion = datetime.combine(fecha_inicio, datetime.min.time()) + timedelta(hours=3)
         scheduler.add_job(
             clonar_equipos_del_dia,
